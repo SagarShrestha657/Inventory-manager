@@ -1,4 +1,8 @@
 // Update all InventoryHistory records for a productId with new name/SKU
+import { Request, Response } from 'express';
+import { Types } from 'mongoose';
+import Inventory, { IInventory } from '../models/inventory';
+import InventoryHistory, { IInventoryHistory } from '../models/InventoryHistory'; // Import InventoryHistory model
 export const updateProductHistory = async (req: Request, res: Response): Promise<void> => {
   try {
     const userId = req.user?.id;
@@ -21,10 +25,7 @@ export const updateProductHistory = async (req: Request, res: Response): Promise
     res.status(500).json({ message: 'Error updating inventory history', error });
   }
 };
-import { Request, Response } from 'express';
-import { Types } from 'mongoose';
-import Inventory, { IInventory } from '../models/inventory';
-import InventoryHistory, { IInventoryHistory } from '../models/InventoryHistory'; // Import InventoryHistory model
+
 
 declare module 'express-serve-static-core' {
   interface Request {
@@ -34,7 +35,8 @@ declare module 'express-serve-static-core' {
 
 export const getInventory = async (req: Request, res: Response): Promise<void> => {
   try {
-    const items = await Inventory.find();
+    const userId = req.user?.id; // Get userId from authenticated user
+    const items = await Inventory.find({ userId });
     res.status(200).json(items);
   } catch (error) {
     res.status(500).json({ message: 'Error fetching inventory', error });
@@ -219,7 +221,7 @@ export const updateItemQuantity = async (req: Request, res: Response): Promise<v
 
     item.quantity = newQuantity;
     const updatedItem = await item.save();
-    
+
     // Create inventory history entry for quantity adjustment
     const historyEntry: IInventoryHistory = new InventoryHistory({
       productId: updatedItem._id,
@@ -475,7 +477,7 @@ export const getTopSellingProducts = async (req: Request, res: Response): Promis
         break;
       case '10days':
         // Adjust for 'Last 10 Days' including today
-        now.setDate(now.getDate() - 9); 
+        now.setDate(now.getDate() - 9);
         dateFilter = { $gte: new Date(now.setHours(0, 0, 0, 0)), $lte: new Date() };
         break;
       case 'month':
@@ -514,20 +516,26 @@ export const getTopSellingProducts = async (req: Request, res: Response): Promis
 
     const topSellingProducts = await InventoryHistory.aggregate([
       { $match: matchConditions },
-      { $group: {
+      {
+        $group: {
           _id: '$productName',
           totalSoldQuantity: { $sum: '$changeQuantity' },
           totalRevenue: { $sum: { $multiply: ['$priceAtTransaction', '$changeQuantity'] } },
           totalCostOfGoodsSold: { $sum: { $multiply: ['$buyingPriceAtTransaction', '$changeQuantity'] } },
-        }},
-      { $addFields: {
+        }
+      },
+      {
+        $addFields: {
           averageSellingPrice: { $divide: ['$totalRevenue', '$totalSoldQuantity'] },
           averageBuyingPrice: { $divide: ['$totalCostOfGoodsSold', '$totalSoldQuantity'] },
-        }},
-      { $addFields: {
+        }
+      },
+      {
+        $addFields: {
           profitPerUnit: { $subtract: ['$averageSellingPrice', '$averageBuyingPrice'] },
           totalProfit: { $subtract: ['$totalRevenue', '$totalCostOfGoodsSold'] },
-        }},
+        }
+      },
       { $sort: { totalSoldQuantity: -1 } },
       { $limit: 10 },
     ]);
