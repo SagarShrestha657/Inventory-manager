@@ -641,7 +641,7 @@ const AnalyticsPage: React.FC = () => {
                           </Typography>
                         </CircularProgressWithLabel>
                         <Typography variant="body2" sx={{ mt: 1 }}>
-                          Sales: NPR {goal.targetAmount.toLocaleString()}
+                          Sales: NPR {goal?.targetAmount?.toLocaleString()}
                         </Typography>
                       </Box>
                     </Grid>
@@ -659,7 +659,7 @@ const AnalyticsPage: React.FC = () => {
                           </Typography>
                         </CircularProgressWithLabel>
                         <Typography variant="body2" sx={{ mt: 1 }}>
-                          Profit: NPR {goal.targetProfit.toLocaleString()}
+                          Profit: NPR {goal?.targetProfit?.toLocaleString()}
                         </Typography>
                       </Box>
                     </Grid>
@@ -879,7 +879,7 @@ const AnalyticsPage: React.FC = () => {
                       productName: r.productName,
                       quantity: r.changeQuantity,
                       buyValue: `NPR ${((r.buyingPriceAtTransaction || 0) * r.changeQuantity).toFixed(2)}`,
-                      date: new Date(r.timestamp).toLocaleString(),
+                      date: new Date(r.timestamp)?.toLocaleString(),
                     }));
                     const totalQuantityAdded = historyData.filter(r => r.type === 'add').reduce((acc, r) => acc + r.changeQuantity, 0);
                     const totalBuyValueAdded = historyData.filter(r => r.type === 'add').reduce((acc, r) => acc + ((r.buyingPriceAtTransaction || 0) * r.changeQuantity), 0);
@@ -905,7 +905,7 @@ const AnalyticsPage: React.FC = () => {
                       stock: r.currentQuantity,
                       buyValue: r.buyingPriceAtTransaction ? `NPR ${r.buyingPriceAtTransaction.toFixed(2)}` : 'N/A',
                       sellValue: r.priceAtTransaction ? `NPR ${r.priceAtTransaction.toFixed(2)}` : 'N/A',
-                      date: new Date(r.timestamp).toLocaleString(),
+                      date: new Date(r.timestamp)?.toLocaleString(),
                     }));
                     break;
                   case 'stock_sold':
@@ -928,7 +928,7 @@ const AnalyticsPage: React.FC = () => {
                         sellValue: `NPR ${sellValue.toFixed(2)}`,
                         buyValue: `NPR ${buyValue.toFixed(2)}`,
                         profit: `NPR ${profit.toFixed(2)}`,
-                        date: new Date(r.timestamp).toLocaleString(),
+                        date: new Date(r.timestamp)?.toLocaleString(),
                       };
                     });
                     const totalQuantitySold = historyData.filter(r => r.type === 'reduce').reduce((acc, r) => acc + Math.abs(r.changeQuantity), 0);
@@ -957,7 +957,7 @@ const AnalyticsPage: React.FC = () => {
                       productName: r.productName,
                       stock: r.changeQuantity,
                       buyValue: `NPR ${((r.buyingPriceAtTransaction || 0) * r.changeQuantity).toFixed(2)}`,
-                      date: new Date(r.timestamp).toLocaleString(),
+                      date: new Date(r.timestamp)?.toLocaleString(),
                     }));
                     const totalInitialStock = historyData.filter(r => r.type === 'new_item').reduce((acc, r) => acc + r.changeQuantity, 0);
                     const totalInitialBuyValue = historyData.filter(r => r.type === 'new_item').reduce((acc, r) => acc + ((r.buyingPriceAtTransaction || 0) * r.changeQuantity), 0);
@@ -981,7 +981,7 @@ const AnalyticsPage: React.FC = () => {
                       productName: r.productName,
                       stock: Math.abs(r.changeQuantity),
                       buyValue: `NPR ${((r.buyingPriceAtTransaction || 0) * Math.abs(r.changeQuantity)).toFixed(2)}`,
-                      date: new Date(r.timestamp).toLocaleString(),
+                      date: new Date(r.timestamp)?.toLocaleString(),
                     }));
                     const totalDeletedStock = historyData.filter(r => r.type === 'delete_item').reduce((acc, r) => acc + Math.abs(r.changeQuantity), 0);
                     const totalDeletedBuyValue = historyData.filter(r => r.type === 'delete_item').reduce((acc, r) => acc + ((r.buyingPriceAtTransaction || 0) * Math.abs(r.changeQuantity)), 0);
