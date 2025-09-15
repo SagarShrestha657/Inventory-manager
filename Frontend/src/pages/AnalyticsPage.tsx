@@ -362,7 +362,7 @@ const AnalyticsPage: React.FC = () => {
     return { totalSalesForGoal: sales, totalProfitForGoal: sales - cost };
   }, [goalHistoryData]);
 
-  const totalGoalSalesPercentage = goal && goal.targetAmount > 0 ? (totalSalesForGoal / goal.targetAmount) * 100 : 5;
+  const totalGoalSalesPercentage = goal && goal.targetAmount > 0 ? (totalSalesForGoal / goal.targetAmount) * 100 : 0;
   const totalGoalProfitPercentage = goal && goal.targetProfit > 0 ? (totalProfitForGoal / goal.targetProfit) * 100 : 0;
 
 
