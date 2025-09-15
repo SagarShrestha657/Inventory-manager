@@ -15,6 +15,7 @@ import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'; /
 import { updateItem } from '../../services/inventoryService';
 import * as categoryService from '../../services/categoryService';
 import axios from 'axios';
+import API_BASE_URL from '../../config';
 
 interface EditProductModalProps {
   open: boolean;
@@ -72,7 +73,7 @@ const EditProductModal: React.FC<EditProductModalProps> = ({ open, onClose, prod
       // If name or sku changed, update all histories for this productId
       if ((productData.name && productData.name !== oldName) || (productData.sku && productData.sku !== oldSku)) {
         try {
-          await axios.put(`http://localhost:5000/api/inventory/${id}/update-history`, {
+          await axios.put(`${API_BASE_URL}/inventory/${id}/update-history`, {
             name: productData.name,
             sku: productData.sku
           }, {

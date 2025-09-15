@@ -1,3 +1,9 @@
+import axios from 'axios';
+import useAuthStore from '../store/authStore';
+import API_BASE_URL from '../config';
+
+const API_URL = `${API_BASE_URL}/auth`;
+
 const requestChangePasswordOtp = async () => {
   const token = useAuthStore.getState().token;
   if (!token) throw new Error('Not authenticated');
@@ -19,11 +25,6 @@ const changePasswordWithOtp = async (otp: string, newPassword: string) => {
   );
   return response.data;
 };
-import axios from 'axios';
-import useAuthStore from '../store/authStore';
-
-const API_URL = 'http://localhost:5000/api/auth'; // Adjust as per your backend URL
-// 
 
 const requestDeleteAccount = async (password: string) => {
   const token = useAuthStore.getState().token;

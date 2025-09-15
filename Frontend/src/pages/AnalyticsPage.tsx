@@ -1,6 +1,7 @@
 import React, { useState, useEffect, useMemo } from 'react';
 import axios from 'axios';
 import { useSnackbar } from 'notistack';
+import API_BASE_URL from '../config';
 // Inventory history type for analytics
 interface IInventoryHistoryItem {
   _id: string;
@@ -67,8 +68,8 @@ const ANALYTICS_TYPES = [
   { value: 'stock_sold', label: 'Stock Sold' },
 ];
 
-const API_URL = 'http://localhost:5000/api/inventory';
-const GOALS_API_URL = 'http://localhost:5000/api/goal';
+const API_URL = `${API_BASE_URL}/inventory`;
+const GOALS_API_URL = `${API_BASE_URL}/goal`;
 
 // Interface for goal data
 interface IGoal {
@@ -336,7 +337,6 @@ const AnalyticsPage: React.FC = () => {
       startDate.setHours(0, 0, 0, 0); // Start of the day
       const endDate = new Date(goal.deadline);
       endDate.setHours(23, 59, 59, 999); // End of today
-      console.log(startDate, endDate);
       const url = `${API_URL}/history?period=custom&startDate=${startDate.toISOString()}&endDate=${endDate.toISOString()}`;
       const response = await axios.get(url, getAuthHeaders());
       return response.data;
@@ -489,7 +489,7 @@ const AnalyticsPage: React.FC = () => {
     currentGoalMonth = Math.max(1, Math.min(goal.durationMonths, (now.getFullYear() - start.getFullYear()) * 12 + (now.getMonth() - start.getMonth()) + 1));
   }
   // Calculate start and end of current goal month
-  let monthStart = null, monthEnd = null, daysLeft = undefined, totalDays = null;
+  let monthStart = null, monthEnd = null, daysLeft = null, totalDays = null;
   if (goal && goal.startDate && goal.durationMonths) {
     const start = new Date(goal.startDate);
     monthStart = new Date(start.getFullYear(), start.getMonth() + currentGoalMonth - 1, 1);

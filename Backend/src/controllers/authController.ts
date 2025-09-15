@@ -175,7 +175,11 @@ export const verifyOtp = async (req: Request, res: Response) => {
     await sendSuccessfulRegistration(user.email, user.username);
 
     const payload = { user: { id: user.id } };
-    jwt.sign(payload, process.env.JWT_SECRET || 'your_jwt_secret', { expiresIn: '7d' }, (err, token) => {
+    const JWT_SECRET = process.env.JWT_SECRET;
+    if (!JWT_SECRET) {
+      return res.status(500).json({ message: 'Server configuration error' });
+    }
+    jwt.sign(payload, JWT_SECRET, { expiresIn: '7d' }, (err, token) => {
       if (err) throw err;
       res.status(200).json({ message: 'OTP verified successfully.', token, userId: user.id, username: user.username, email: user.email });
     });
@@ -216,8 +220,11 @@ export const login = async (req: Request, res: Response) => {
     }
 
     const payload = { user: { id: user.id } };
-
-    jwt.sign(payload, process.env.JWT_SECRET || 'your_jwt_secret', { expiresIn: '7d' }, (err, token) => {
+    const JWT_SECRET = process.env.JWT_SECRET;
+    if (!JWT_SECRET) {
+      return res.status(500).json({ message: 'Server configuration error' });
+    }
+    jwt.sign(payload, JWT_SECRET, { expiresIn: '7d' }, (err, token) => {
       if (err) throw err;
       res.json({ token, userId: user.id, username: user.username, email: user.email }); // Return userId along with the token
     });

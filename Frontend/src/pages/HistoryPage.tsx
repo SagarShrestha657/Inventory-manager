@@ -1,4 +1,5 @@
 import React, { useState } from 'react';
+import API_BASE_URL from '../config';
 import {
   Box,
   Typography,
@@ -39,7 +40,9 @@ interface IInventoryHistoryItem {
   timestamp: string;
 }
 
-const API_URL = 'http://localhost:5000/api/inventory';
+const API_URL = `${API_BASE_URL}/inventory`;
+
+
 
 const getAuthHeaders = () => {
   const token = localStorage.getItem('token');

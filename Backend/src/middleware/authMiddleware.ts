@@ -15,8 +15,12 @@ export default function auth(req: AuthenticatedRequest, res: Response, next: Nex
   }
 
   // Verify token
+  const JWT_SECRET = process.env.JWT_SECRET;
+  if (!JWT_SECRET) {
+    return res.status(500).json({ message: 'Server configuration error' });
+  }
   try {
-    const decoded: any = jwt.verify(token, process.env.JWT_SECRET || 'your_jwt_secret');
+    const decoded: any = jwt.verify(token, JWT_SECRET);
     req.user = decoded.user;
     next();
   } catch (err) {

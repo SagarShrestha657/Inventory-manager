@@ -1,6 +1,7 @@
 import axios from 'axios';
+import API_BASE_URL from '../config';
 
-const API_URL = 'http://localhost:5000/api/categories';
+const API_URL = `${API_BASE_URL}/categories`;
 
 export interface ICategory {
   _id: string;

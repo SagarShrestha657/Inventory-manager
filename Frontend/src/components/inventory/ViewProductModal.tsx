@@ -7,8 +7,6 @@ import {
   Button,
   Typography,
   Grid,
-  Divider,
-  Box,
 } from '@mui/material';
 import type { IInventoryItem } from '../../services/inventoryService';
 
