@@ -562,7 +562,7 @@ const AnalyticsPage: React.FC = () => {
       </Box>
 
       {/* goal Progress Section */}
-      {goal && (
+      {goal?.targetAmount && (
         <Paper elevation={3} sx={{
           p: 3,
           mb: 4,
