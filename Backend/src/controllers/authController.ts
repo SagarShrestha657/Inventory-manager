@@ -1,3 +1,10 @@
+import { Request, Response } from 'express';
+import bcrypt from 'bcryptjs';
+import jwt from 'jsonwebtoken';
+import User, { IUser } from '../models/User';
+import crypto from 'crypto';
+import { sendRegistrationOtp, sendForgotPasswordOtp, sendPasswordResetConfirmation, sendSuccessfulRegistration } from '../lib/email/emailService'; // Import new email services
+
 // Request OTP for password change
 export const requestChangePasswordOtp = async (req: any, res: any) => {
   try {
@@ -112,12 +119,6 @@ export const changePassword = async (req: any, res: any) => {
     res.status(500).json({ message: 'Server error.' });
   }
 };
-import { Request, Response } from 'express';
-import bcrypt from 'bcryptjs';
-import jwt from 'jsonwebtoken';
-import User, { IUser } from '../models/User';
-import crypto from 'crypto';
-import { sendRegistrationOtp, sendForgotPasswordOtp, sendPasswordResetConfirmation, sendSuccessfulRegistration } from '../lib/email/emailService'; // Import new email services
 
 // Register User
 export const register = async (req: Request, res: Response) => {
