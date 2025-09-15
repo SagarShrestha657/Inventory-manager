@@ -6,7 +6,7 @@
     "start": "node dist/app.js",
     "server": "nodemon src/app.ts",
     "dev": "ts-node-dev --respawn --transpile-only src/app.ts",
-    "build": "tsc && npx copyfiles -u 1 src/lib/email/templates/*.html dist/lib/email/templates",
+    "build": "tsc",
     "test": "echo \"Error: no test specified\" && exit 1"
   },
   "keywords": [
@@ -29,7 +29,6 @@
     "@types/nodemailer": "^7.0.1",
     "bcryptjs": "^3.0.2",
     "cors": "^2.8.5",
-    "copyfiles": "^2.4.1",
     "dotenv": "^16.6.1",
     "express": "^4.18.2",
     "jsonwebtoken": "^9.0.2",
