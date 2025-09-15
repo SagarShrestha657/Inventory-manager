@@ -1,0 +1,20 @@
+/* Tailwind Directives */
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+/* Material UI overrides */
+body {
+  margin: 0;
+  font-family: 'Roboto', 'Helvetica', 'Arial', sans-serif;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+  background-color: #F5F7FA;
+  color: #263238;
+  min-height: 100vh;
+}
+
+/* Custom utility classes */
+.min-h-screen-safe {
+  min-height: calc(100vh - 64px);
+}
