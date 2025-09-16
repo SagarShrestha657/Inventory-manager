@@ -186,9 +186,15 @@ const Categories: React.FC = () => {
       return;
     }
 
+    const capitalize = (s: string) => {
+      if (typeof s !== 'string' || !s) return s;
+      return s.charAt(0).toUpperCase() + s.slice(1).toLowerCase();
+    };
+    const formattedName = capitalize(categoryName.trim());
+
     if (editingCategory) {
       const updateData = {
-        name: categoryName.trim(),
+        name: formattedName,
         description: categoryDescription.trim(),
         icon: categoryIcon,
       };
@@ -199,7 +205,7 @@ const Categories: React.FC = () => {
         return;
       }
       const newCategoryData = { 
-        name: categoryName.trim(), 
+        name: formattedName, 
         description: categoryDescription.trim(),
         icon: categoryIcon,
         productCount: 0,

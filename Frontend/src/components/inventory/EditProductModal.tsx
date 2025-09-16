@@ -16,6 +16,7 @@ import { updateItem } from '../../services/inventoryService';
 import * as categoryService from '../../services/categoryService';
 import axios from 'axios';
 import API_BASE_URL from '../../config';
+import useAuthStore from '../../store/authStore';
 
 interface EditProductModalProps {
   open: boolean;
@@ -27,12 +28,14 @@ interface EditProductModalProps {
 
 const EditProductModal: React.FC<EditProductModalProps> = ({ open, onClose, product, onSuccess, onError }) => {
   const queryClient = useQueryClient();
+  const { userId } = useAuthStore();
   const [formData, setFormData] = useState<IInventoryItem | null>(null);
   const [formErrors, setFormErrors] = useState({ name: false, sku: false, category: false });
 
   const { data: categories = [], isLoading: isCategoriesLoading } = useQuery({
-    queryKey: ['categories'],
+    queryKey: ['categories', userId],
     queryFn: categoryService.getCategories,
+    enabled: !!userId,
   });
 
   const createCategoryMutation = useMutation({
@@ -52,11 +55,32 @@ const EditProductModal: React.FC<EditProductModalProps> = ({ open, onClose, prod
   }, [open, product]);
 
   const updateProductMutation = useMutation({
-    mutationFn: async ({ id, productData, oldName, oldSku }: { id: string; productData: Partial<IInventoryItem>; oldName: string; oldSku: string }) => {
-      if (productData.category && !categories.some(cat => cat.name === productData.category)) {
-        await createCategoryMutation.mutateAsync({ name: productData.category, icon: 'CategoryIcon' });
+    mutationFn: async ({ id, productData, oldName, oldSku }: { id: string; productData: IInventoryItem; oldName: string; oldSku: string }) => {
+      const capitalize = (s: string) => {
+        if (typeof s !== 'string' || !s) return s;
+        return s.charAt(0).toUpperCase() + s.slice(1).toLowerCase();
+      };
+
+      if (productData.category) {
+        const formattedCategoryName = capitalize(productData.category.trim());
+        productData.category = formattedCategoryName;
+
+        const categoryExists = categories.some(cat => cat.name.toLowerCase() === formattedCategoryName.toLowerCase());
+
+        if (!categoryExists) {
+          if (!userId) throw new Error('User not found, cannot create category');
+          await createCategoryMutation.mutateAsync({
+            name: formattedCategoryName,
+            icon: 'CategoryIcon',
+            description: '',
+            productCount: 0,
+            userId: userId
+          });
+        }
       }
+      
       const updated = await updateItem(id, productData);
+
       if ((productData.name && productData.name !== oldName) || (productData.sku && productData.sku !== oldSku)) {
         await axios.put(`${API_BASE_URL}/inventory/${id}/update-history`, {
           name: productData.name,
@@ -74,7 +98,7 @@ const EditProductModal: React.FC<EditProductModalProps> = ({ open, onClose, prod
       onClose();
     },
     onError: (err: any) => {
-      onError(err.response?.data?.message || 'Error updating product');
+      onError(err.response?.data?.message || err.message || 'Error updating product');
     },
   });
 
@@ -84,7 +108,7 @@ const EditProductModal: React.FC<EditProductModalProps> = ({ open, onClose, prod
     setFormErrors((prev) => ({ ...prev, [name]: false }));
   };
 
-  const handleCategoryChange = async (_event: React.SyntheticEvent, newValue: string | null) => {
+  const handleCategoryChange = (_event: React.SyntheticEvent, newValue: string | null) => {
     setFormData((prev) => (prev ? { ...prev, category: newValue || '' } : null));
     setFormErrors((prev) => ({ ...prev, category: false }));
   };
@@ -99,14 +123,14 @@ const EditProductModal: React.FC<EditProductModalProps> = ({ open, onClose, prod
     return !Object.values(newErrors).some(Boolean);
   };
 
-  const handleSubmit = async () => {
+  const handleSubmit = () => {
     if (!validateForm() || !formData?._id) {
       return;
     }
     const { _id, createdAt, updatedAt, ...productDataToSend } = formData;
     updateProductMutation.mutate({
       id: _id,
-      productData: productDataToSend,
+      productData: productDataToSend as IInventoryItem, // Cast here as we know it's a full item
       oldName: product?.name || '',
       oldSku: product?.sku || ''
     });

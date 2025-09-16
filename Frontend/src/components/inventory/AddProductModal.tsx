@@ -14,6 +14,7 @@ import {
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import * as categoryService from '../../services/categoryService';
 import { createItem, type IInventoryItem } from '../../services/inventoryService';
+import useAuthStore from '../../store/authStore';
 
 interface AddProductModalProps {
   open: boolean;
@@ -24,6 +25,7 @@ interface AddProductModalProps {
 
 const AddProductModal: React.FC<AddProductModalProps> = ({ open, onClose, onSuccess, onError }) => {
   const queryClient = useQueryClient();
+  const { userId } = useAuthStore();
   const [formData, setFormData] = useState<Omit<IInventoryItem, '_id' | 'createdAt' | 'updatedAt' | 'status'>>({
     name: '',
     sku: '',
@@ -43,8 +45,9 @@ const AddProductModal: React.FC<AddProductModalProps> = ({ open, onClose, onSucc
   });
 
   const { data: categories = [], isLoading: isCategoriesLoading } = useQuery({
-    queryKey: ['categories'],
+    queryKey: ['categories', userId],
     queryFn: categoryService.getCategories,
+    enabled: !!userId,
   });
 
   const createCategoryMutation = useMutation({
@@ -58,7 +61,7 @@ const AddProductModal: React.FC<AddProductModalProps> = ({ open, onClose, onSucc
     mutationFn: createItem,
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['products'] });
-      queryClient.invalidateQueries({ queryKey: ['inventories'] }); // Also invalidate inventories for categories page
+      queryClient.invalidateQueries({ queryKey: ['inventories'] });
       onSuccess('Product added successfully!');
       onClose();
     },
@@ -91,7 +94,7 @@ const AddProductModal: React.FC<AddProductModalProps> = ({ open, onClose, onSucc
     setFormErrors((prev) => ({ ...prev, [name]: false }));
   };
 
-  const handleCategoryChange = async (_event: React.SyntheticEvent, newValue: string | null) => {
+  const handleCategoryChange = (_event: React.SyntheticEvent, newValue: string | null) => {
     setFormData((prev) => ({ ...prev, category: newValue || '' }));
     setFormErrors((prev) => ({ ...prev, category: false }));
   };
@@ -114,19 +117,33 @@ const AddProductModal: React.FC<AddProductModalProps> = ({ open, onClose, onSucc
       return;
     }
     
-    const categoryName = formData.category.trim();
+    const capitalize = (s: string) => {
+      if (typeof s !== 'string' || !s) return s;
+      return s.charAt(0).toUpperCase() + s.slice(1).toLowerCase();
+    };
+    const categoryName = capitalize(formData.category.trim());
     const categoryExists = categories.some((cat) => cat.name.toLowerCase() === categoryName.toLowerCase());
 
     if (categoryName && !categoryExists) {
+      if (!userId) {
+        onError('Cannot create category: User not identified.');
+        return;
+      }
       try {
-        await createCategoryMutation.mutateAsync({ name: categoryName, icon: 'CategoryIcon' });
+        await createCategoryMutation.mutateAsync({
+          name: categoryName,
+          description: '',
+          icon: 'CategoryIcon',
+          productCount: 0,
+          userId: userId,
+        });
       } catch (error) {
         onError('Failed to create new category.');
         return;
       }
     }
 
-    addProductMutation.mutate(formData);
+    addProductMutation.mutate({ ...formData, category: categoryName });
   };
 
   return (
