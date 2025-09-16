@@ -7,11 +7,6 @@ import {
   DialogContent,
   DialogTitle,
   Box,
-  Typography,
-  FormControl,
-  InputLabel,
-  Select,
-  MenuItem,
   Alert,
   CircularProgress,
 } from '@mui/material';
@@ -23,10 +18,11 @@ interface AdjustStockModalProps {
   onClose: () => void;
   product: IInventoryItem | null;
   type: 'add' | 'reduce' | null;
-  onAdjustStockSuccess: () => void;
+  onSuccess: (message: string) => void;
+  onError: (message: string) => void;
 }
 
-const AdjustStockModal: React.FC<AdjustStockModalProps> = ({ open, onClose, product, type, onAdjustStockSuccess }) => {
+const AdjustStockModal: React.FC<AdjustStockModalProps> = ({ open, onClose, product, type, onSuccess, onError }) => {
   const queryClient = useQueryClient();
   const [changeAmount, setChangeAmount] = useState<number>(0);
   const [priceInput, setPriceInput] = useState<number>(0);
@@ -34,43 +30,53 @@ const AdjustStockModal: React.FC<AdjustStockModalProps> = ({ open, onClose, prod
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
 
   useEffect(() => {
-    if (product) {
+    if (open && product) {
       setChangeAmount(0);
       setErrorMessage(null);
-      // Initialize price inputs based on product and type
       if (type === 'reduce') {
         setPriceInput(product.price || 0);
-        setBuyingPriceInput(0); // Clear buying price for reduce
+        setBuyingPriceInput(0);
       } else if (type === 'add') {
         setBuyingPriceInput(product.buyingPrice || 0);
-        setPriceInput(product.price || 0); // Keep selling price for context if needed
+        setPriceInput(product.price || 0);
       }
+    } else if (!open) {
+        setChangeAmount(0);
+        setPriceInput(0);
+        setBuyingPriceInput(0);
+        setErrorMessage(null);
     }
-  }, [product, type]);
+  }, [open, product, type]);
 
   const adjustStockMutation = useMutation({
     mutationFn: ({ id, change, type, price, buyingPrice }: { id: string; change: number; type: 'add' | 'reduce'; price?: number; buyingPrice?: number }) =>
       updateQuantity(id, change, type, price, buyingPrice),
-    onSuccess: () => {
-      onAdjustStockSuccess();
+    onSuccess: (_data, variables) => {
+      queryClient.invalidateQueries({ queryKey: ['products'] });
+      queryClient.invalidateQueries({ queryKey: ['inventories'] });
+      const successMessage = variables.type === 'add' ? 'Stock added successfully!' : 'Stock sold successfully!';
+      onSuccess(successMessage);
       onClose();
     },
     onError: (err: any) => {
-      setErrorMessage(err.response?.data?.message || 'Failed to adjust stock.');
+      const message = err.response?.data?.message || 'Failed to adjust stock.';
+      setErrorMessage(message);
+      onError(message);
     },
   });
 
   const handleSubmit = () => {
+    setErrorMessage(null); // Clear previous errors
     if (!product || changeAmount <= 0) {
-      setErrorMessage('Please enter a valid quantity.');
+      setErrorMessage('Please enter a quantity greater than 0.');
       return;
     }
     if (type === 'reduce' && priceInput <= 0) {
-      setErrorMessage('Please enter a valid selling price.');
+      setErrorMessage('Please enter a selling price greater than 0.');
       return;
     }
     if (type === 'add' && buyingPriceInput <= 0) {
-      setErrorMessage('Please enter a valid buying price.');
+      setErrorMessage('Please enter a buying price greater than 0.');
       return;
     }
 
@@ -95,22 +101,18 @@ const AdjustStockModal: React.FC<AdjustStockModalProps> = ({ open, onClose, prod
             label="Quantity"
             type="number"
             fullWidth
-            value={changeAmount === 0 ? '' : changeAmount} // Display empty string if 0
+            value={changeAmount || ''}
             onChange={(e) => setChangeAmount(Number(e.target.value))}
-            inputProps={{ min: 0 }}
-            error={changeAmount <= 0 && errorMessage !== null}
-            helperText={changeAmount <= 0 && errorMessage !== null ? 'Quantity must be greater than 0' : ''}
+            inputProps={{ min: 1 }}
           />
           {type === 'reduce' && (
             <TextField
               label="Selling Price"
               type="number"
               fullWidth
-              value={priceInput === 0 ? '' : priceInput} // Display empty string if 0
+              value={priceInput || ''}
               onChange={(e) => setPriceInput(Number(e.target.value))}
               inputProps={{ min: 0 }}
-              error={priceInput <= 0 && errorMessage !== null}
-              helperText={priceInput <= 0 && errorMessage !== null ? 'Selling price must be greater than 0' : ''}
             />
           )}
           {type === 'add' && (
@@ -118,11 +120,9 @@ const AdjustStockModal: React.FC<AdjustStockModalProps> = ({ open, onClose, prod
               label="Buying Price"
               type="number"
               fullWidth
-              value={buyingPriceInput === 0 ? '' : buyingPriceInput} // Display empty string if 0
+              value={buyingPriceInput || ''}
               onChange={(e) => setBuyingPriceInput(Number(e.target.value))}
               inputProps={{ min: 0 }}
-              error={buyingPriceInput <= 0 && errorMessage !== null}
-              helperText={buyingPriceInput <= 0 && errorMessage !== null ? 'Buying price must be greater than 0' : ''}
             />
           )}
         </Box>

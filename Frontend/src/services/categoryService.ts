@@ -9,7 +9,6 @@ export interface ICategory {
   description?: string;
   color?: string;
   icon?: string;
-  isActive: boolean;
   productCount: number;
   userId: string;
   createdAt: string;
@@ -53,12 +52,7 @@ export const getCategoryById = async (id: string): Promise<ICategory> => {
 };
 
 // Create new category
-export const createCategory = async (categoryData: {
-  name: string;
-  description?: string;
-  color?: string;
-  icon?: string;
-}): Promise<ICategory> => {
+export const createCategory = async (categoryData: Omit<ICategory, '_id' | 'createdAt' | 'updatedAt'>): Promise<ICategory> => {
   const response = await axios.post(API_URL, categoryData, getAuthHeaders());
   return response.data;
 };

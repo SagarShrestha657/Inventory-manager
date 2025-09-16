@@ -33,6 +33,11 @@ app.get('/', (req: Request, res: Response) => {
   res.json({ message: 'Welcome to Inventory Manager API' });
 });
 
+// Health check endpoint to keep the server alive
+app.get('/api/health', (req: Request, res: Response) => {
+  res.status(200).json({ status: 'alive' });
+});
+
 // 404 handler
 app.use((req: Request, res: Response) => {
   res.status(404).json({ message: 'Route not found' });

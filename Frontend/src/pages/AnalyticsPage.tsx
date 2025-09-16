@@ -528,7 +528,7 @@ const AnalyticsPage: React.FC = () => {
                 Set goal
               </Button>
             )}
-            {goal && (
+            {goal?.targetAmount && (
               <>
                 <Button
                   variant="contained"
