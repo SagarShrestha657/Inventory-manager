@@ -46,6 +46,7 @@ import {
   styled,
   Avatar,
   useTheme,
+  keyframes,
   type SelectChangeEvent as MuiSelectChangeEvent,
 } from '@mui/material';
 import { DatePicker } from '@mui/x-date-pickers/DatePicker'; // Import DatePicker
@@ -57,6 +58,8 @@ import {
   ShoppingCart as ShoppingCartIcon,
   MonetizationOn as MonetizationOnIcon,
   TrendingUp as ProfitIcon,
+  Flag as FlagIcon,
+  EmojiEvents as EmojiEventsIcon,
 } from '@mui/icons-material';
 
 // Analytics type options for the last table
@@ -115,25 +118,45 @@ const GoalCircularProgress = styled(Box)(() => ({
   justifyContent: 'center',
 }));
 
-// Animated CircularProgress for game-like effect
+// Animated CircularProgress that fills based on percentage
+const pulse = keyframes`
+  0% {
+    filter: drop-shadow(0 0 4px rgba(25, 118, 210, 0.6));
+  }
+  50% {
+    filter: drop-shadow(0 0 12px rgba(25, 118, 210, 0.9));
+  }
+  100% {
+    filter: drop-shadow(0 0 4px rgba(25, 118, 210, 0.6));
+  }
+`;
+
+// Animated CircularProgress that fills and glows
 const CircularProgressWithLabel = ({ value, size = 80, thickness = 6, color = 'primary', children }: any) => {
   const [animatedValue, setAnimatedValue] = useState(0);
+
   useEffect(() => {
-    let start = 0;
-    const step = () => {
-      start += (value - start) * 0.15 + 0.5; // Easing
-      if (Math.abs(start - value) < 1) {
-        setAnimatedValue(value);
-      } else {
-        setAnimatedValue(start);
-        requestAnimationFrame(step);
-      }
+    const timer = setTimeout(() => {
+      setAnimatedValue(value);
+    }, 100);
+    return () => {
+      clearTimeout(timer);
     };
-    step();
-    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [value]);
+
   return (
-    <GoalCircularProgress>
+    <Box sx={{ position: 'relative', display: 'inline-flex', alignItems: 'center', justifyContent: 'center' }}>
+      {/* Background track */}
+      <CircularProgress
+        variant="determinate"
+        sx={{
+          color: (theme) => theme.palette.grey[theme.palette.mode === 'light' ? 300 : 700],
+        }}
+        size={size}
+        thickness={thickness}
+        value={100}
+      />
+      {/* Foreground progress bar that fills up */}
       <CircularProgress
         variant="determinate"
         value={Math.min(animatedValue, 100)}
@@ -141,23 +164,17 @@ const CircularProgressWithLabel = ({ value, size = 80, thickness = 6, color = 'p
         thickness={thickness}
         color={color}
         sx={{
-          color: animatedValue > 100 ? '#4caf50' : undefined,
-          transition: 'all 0.6s cubic-bezier(0.4, 0, 0.2, 1)',
+          color: animatedValue > 100 ? 'success.main' : undefined,
+          transition: 'all 1.5s ease-out',
+          position: 'absolute',
+          left: 0,
+          animation: `${pulse} 2.5s infinite ease-in-out`, // Apply the pulsing glow
+          [`& .MuiCircularProgress-circle`]: {
+            strokeLinecap: 'round',
+          },
         }}
       />
-      {animatedValue > 100 && (
-        <CircularProgress
-          variant="determinate"
-          value={100}
-          size={size}
-          thickness={thickness}
-          sx={{
-            color: '#e8f5e8',
-            position: 'absolute',
-            left: 0,
-          }}
-        />
-      )}
+      {/* Percentage text in the middle */}
       <Box
         sx={{
           top: 0,
@@ -173,7 +190,7 @@ const CircularProgressWithLabel = ({ value, size = 80, thickness = 6, color = 'p
       >
         {children}
       </Box>
-    </GoalCircularProgress>
+    </Box>
   );
 };
 
@@ -187,43 +204,6 @@ const fetchMonthlyAnalytics = async (): Promise<MonthlyAnalytics> => {
   return response.data;
 };
 
-
-// // Fetch user goal from backend
-// const fetchUserGoals = async (): Promise<IGoal[]> => {
-//   try {
-//     const response = await axios.get(GOALS_API_URL, getAuthHeaders());
-//     return response.data.goal || [];
-//   } catch (error) {
-//     console.error('Error fetching goal:', error);
-//     return [];
-//   }
-// };
-
-// // Save user goal to backend
-// const saveUserGoals = async (goalData: {
-//   targetAmount: number;
-//   targetProfit: number;
-//   durationMonths: number;
-// }): Promise<IGoal> => {
-//   try {
-//     const response = await axios.post<{ goal: IGoal }>(
-//       GOALS_API_URL,
-//       {
-//         targetAmount: goalData.targetAmount,
-//         targetProfit: goalData.targetProfit,
-//         durationMonths: goalData.durationMonths,
-//         deadline: new Date(new Date().setMonth(new Date().getMonth() + goalData.durationMonths)),
-//         startDate: new Date()
-//       },
-//       getAuthHeaders()
-//     );
-
-//     return response.data.goal;
-//   } catch (error) {
-//     console.error('Error saving goal to server:', error);
-//     throw error; // Re-throw to be handled by the caller
-//   }
-// };
 
 const AnalyticsPage: React.FC = () => {
   const { enqueueSnackbar } = useSnackbar();
@@ -505,24 +485,30 @@ const AnalyticsPage: React.FC = () => {
     }
   }
 
+
+
   return (
     <Paper elevation={3} sx={{ p: 3, mb: 3 }}>
       {/* Header with goal */}
-      <Box sx={{ mb: 4, p: 2, backgroundColor: (theme) => theme.palette.mode === 'dark' ? theme.palette.grey[900] : theme.palette.primary.light, borderRadius: '4px' }}>
+      {/* Header with goal */}
+      <Box sx={{ mb: 4, p: 2, backgroundColor: 'primary.main', borderRadius: '4px' }}>
         <Box display="flex" justifyContent="space-between" alignItems="center">
-          <Typography variant="h5" component="h1" sx={{ color: (theme) => theme.palette.mode === 'dark' ? 'inherit' : theme.palette.primary.contrastText }}>
+          <Typography variant="h5" component="h1" sx={{ color: 'white' }}>
             Inventory Analytics
           </Typography>
           <Box>
             {!goal && (
               <Button
-                variant="contained"
-                startIcon={<EditIcon />}
+                variant="outlined"
+                startIcon={<FlagIcon />}
                 onClick={openSetGoalDialog}
                 sx={{
-                  bgcolor: 'rgba(255,255,255,0.2)',
-                  '&:hover': { bgcolor: 'rgba(255,255,255,0.3)' },
                   color: 'white',
+                  borderColor: 'rgba(255, 255, 255, 0.7)',
+                  '&:hover': {
+                    borderColor: 'white',
+                    backgroundColor: 'rgba(255, 255, 255, 0.1)',
+                  },
                 }}
               >
                 Set goal
@@ -531,26 +517,32 @@ const AnalyticsPage: React.FC = () => {
             {goal?.targetAmount && (
               <>
                 <Button
-                  variant="contained"
-                  startIcon={<EditIcon />}
+                  variant="outlined"
+                  startIcon={<FlagIcon />}
                   onClick={openSetGoalDialog}
                   sx={{
-                    bgcolor: 'rgba(255,255,255,0.2)',
-                    '&:hover': { bgcolor: 'rgba(255,255,255,0.3)' },
                     color: 'white',
+                    borderColor: 'rgba(255, 255, 255, 0.7)',
+                    '&:hover': {
+                      borderColor: 'white',
+                      backgroundColor: 'rgba(255, 255, 255, 0.1)',
+                    },
                     mr: 2
                   }}
                 >
                   Set Goal
                 </Button>
                 <Button
-                  variant="contained"
+                  variant="outlined"
                   startIcon={<EditIcon />}
                   onClick={openEditGoalDialog}
                   sx={{
-                    bgcolor: 'rgba(255,255,255,0.2)',
-                    '&:hover': { bgcolor: 'rgba(255,255,255,0.3)' },
-                    color: 'white'
+                    color: 'white',
+                    borderColor: 'rgba(255, 255, 255, 0.7)',
+                    '&:hover': {
+                      borderColor: 'white',
+                      backgroundColor: 'rgba(255, 255, 255, 0.1)',
+                    },
                   }}
                 >
                   Edit goal
@@ -563,117 +555,156 @@ const AnalyticsPage: React.FC = () => {
 
       {/* goal Progress Section */}
       {goal?.targetAmount && (
-        <Paper elevation={3} sx={{
-          p: 3,
-          mb: 4,
-          background: (theme) => `linear-gradient(135deg, ${theme.palette.primary.main} 0%, ${theme.palette.secondary.main} 100%)`,
-          color: (theme) => theme.palette.getContrastText(theme.palette.primary.main),
-          borderRadius: 4,
-          boxShadow: 8,
-        }}>
-          <Typography variant="h6" gutterBottom color="inherit">
-            Your Goal Progress
-          </Typography>
-          <Grid container spacing={3} alignItems="center">
-            {/* Daily Progress (left) */}
-            <Grid item xs={12} md={6}>
-              <Card sx={{ bgcolor: 'rgba(255,255,255,0.1)', color: 'white' }}>
-                <CardContent sx={{ textAlign: 'center' }}>
-                  <Typography variant="h6" gutterBottom>Today's Targets</Typography>
-                  <Grid container spacing={2} justifyContent="center">
-                    <Grid item xs={6}>
-                      <Box display="flex" flexDirection="column" alignItems="center">
-                        <MoneyIcon sx={{ fontSize: 30, mb: 1 }} />
-                        <CircularProgressWithLabel
-                          value={dailySalesPercentage}
-                          size={80}
-                          thickness={7}
-                          color={dailySalesPercentage > 100 ? 'secondary' : 'primary'}
-                        >
-                          <Typography fontSize={10} fontWeight="bold">
-                            {dailySalesPercentage.toFixed(2)}%
-                          </Typography>
-                        </CircularProgressWithLabel>
-                        <Typography variant="body2" sx={{ mt: 1 }}>
-                          Target: NPR {dailySalesTarget.toFixed(0)}
-                        </Typography>
-                      </Box>
-                    </Grid>
-                    <Grid item xs={6}>
-                      <Box display="flex" flexDirection="column" alignItems="center">
-                        <TrendingUpIcon sx={{ fontSize: 30, mb: 1 }} />
-                        <CircularProgressWithLabel
-                          value={dailyProfitPercentage}
-                          size={80}
-                          thickness={7}
-                          color={dailyProfitPercentage > 100 ? 'secondary' : 'primary'}
-                        >
-                          <Typography fontSize={10} fontWeight="bold">
-                            {dailyProfitPercentage.toFixed(2)}%
-                          </Typography>
-                        </CircularProgressWithLabel>
-                        <Typography variant="body2" sx={{ mt: 1 }}>
-                          Target: NPR {dailyProfitTarget.toFixed(0)}
-                        </Typography>
-                      </Box>
-                    </Grid>
-                  </Grid>
-                </CardContent>
-              </Card>
-            </Grid>
-            {/* Total Goal Progress (right) */}
-            <Grid item xs={12} md={6}>
-              <Card sx={{ bgcolor: 'rgba(255,255,255,0.1)', color: 'white' }}>
-                <CardContent sx={{ textAlign: 'center' }}>
-                  <Typography variant="h6" gutterBottom>Goal Progress ({goal.durationMonths} Months)</Typography>
-                  <Grid container spacing={2} justifyContent="center">
-                    <Grid item xs={6}>
-                      <Box display="flex" flexDirection="column" alignItems="center">
-                        <MoneyIcon sx={{ fontSize: 30, mb: 1 }} />
-                        <CircularProgressWithLabel
-                          value={totalGoalSalesPercentage}
-                          size={80}
-                          thickness={7}
-                          color={totalGoalSalesPercentage > 100 ? 'secondary' : 'primary'}
-                        >
-                          <Typography fontSize={10} fontWeight="bold">
-                            {totalGoalSalesPercentage.toFixed(2)}%
-                          </Typography>
-                        </CircularProgressWithLabel>
-                        <Typography variant="body2" sx={{ mt: 1 }}>
-                          Sales: NPR {goal?.targetAmount?.toLocaleString()}
-                        </Typography>
-                      </Box>
-                    </Grid>
-                    <Grid item xs={6}>
-                      <Box display="flex" flexDirection="column" alignItems="center">
-                        <TrendingUpIcon sx={{ fontSize: 30, mb: 1 }} />
-                        <CircularProgressWithLabel
-                          value={totalGoalProfitPercentage}
-                          size={80}
-                          thickness={7}
-                          color={totalGoalProfitPercentage > 100 ? 'secondary' : 'primary'}
-                        >
-                          <Typography fontSize={10} fontWeight="bold">
-                            {totalGoalProfitPercentage.toFixed(2)}%
-                          </Typography>
-                        </CircularProgressWithLabel>
-                        <Typography variant="body2" sx={{ mt: 1 }}>
-                          Profit: NPR {goal?.targetProfit?.toLocaleString()}
-                        </Typography>
-                      </Box>
-                    </Grid>
-                  </Grid>
-                </CardContent>
-              </Card>
-            </Grid>
-          </Grid>
-        </Paper>
+        <>
+          {goalDaysLeft !== null && goalDaysLeft < 0 ? (
+            <Paper elevation={3} sx={{ p: 3, mb: 1, textAlign: 'center', backgroundColor: 'grey.100', borderRadius: 4 }}>
+              <Typography variant="h5" gutterBottom>
+                Goal Period Finished!
+              </Typography>
+              <Typography variant="h6" color="text.secondary">
+                Here's your final summary:
+              </Typography>
+              <Grid container spacing={2} sx={{ mt: 2, mb: 2 }}>
+                <Grid item xs={6}>
+                  <Typography variant="button" display="block" gutterBottom>Total Sales</Typography>
+                  <Typography variant="h5" color={totalSalesForGoal >= goal.targetAmount ? 'success.main' : 'error.main'}>
+                    NPR {totalSalesForGoal.toLocaleString()} / {goal.targetAmount.toLocaleString()}
+                  </Typography>
+                </Grid>
+                <Grid item xs={6}>
+                  <Typography variant="button" display="block" gutterBottom>Total Profit</Typography>
+                  <Typography variant="h5" color={totalProfitForGoal >= goal.targetProfit ? 'success.main' : 'error.main'}>
+                    NPR {totalProfitForGoal.toLocaleString()} / {goal.targetProfit.toLocaleString()}
+                  </Typography>
+                </Grid>
+              </Grid>
+              {(totalSalesForGoal >= goal.targetAmount && totalProfitForGoal >= goal.targetProfit) ? (
+                <Box sx={{ mt: 2, p: 2, borderRadius: 1, bgcolor: 'success.light' }}>
+                  <EmojiEventsIcon sx={{ fontSize: 40, color: 'warning.main' }} />
+                  <Typography variant="h6" sx={{ color: 'success.dark', fontWeight: 'bold' }}>
+                    Congratulations! You reached your goals!
+                  </Typography>
+                </Box>
+              ) : (
+                <Box sx={{ mt: 2, p: 2, borderRadius: 1, bgcolor: 'error.light' }}>
+                  <Typography variant="h6" sx={{ color: 'error.dark', fontWeight: 'bold' }}>
+                    You didn't quite reach your goals this time. Keep it up!
+                  </Typography>
+                </Box>
+              )}
+            </Paper>
+          ) : (
+            <Paper elevation={0} sx={{
+              p: 3,
+              mb: 1,
+              background: (theme) => theme.palette.mode === 'dark' ? theme.palette.grey[900] : theme.palette.grey[100],
+              borderRadius: 4,
+            }}>
+              <Typography variant="h6" gutterBottom color="text.primary">
+                Your Goal Progress
+              </Typography>
+              <Grid container spacing={3} alignItems="center">
+                {/* Daily Progress (left) */}
+                <Grid item xs={12} md={6}>
+                  <Card elevation={4} sx={{ backgroundColor: '#f9f9f9' }}>
+                    <CardContent sx={{ textAlign: 'center' }}>
+                      <Typography variant="h6" gutterBottom>Today's Targets</Typography>
+                      <Grid container spacing={2} justifyContent="center">
+                        <Grid item xs={6}>
+                          <Box display="flex" flexDirection="column" alignItems="center">
+                            <MoneyIcon sx={{ fontSize: 30, mb: 1, color: 'primary.main' }} />
+                            <CircularProgressWithLabel
+                              value={dailySalesPercentage}
+                              size={80}
+                              thickness={7}
+                              color={dailySalesPercentage > 100 ? 'success' : 'primary'}
+                            >
+                              <Typography fontSize={10} fontWeight="bold">
+                                {dailySalesPercentage.toFixed(2)}%
+                              </Typography>
+                            </CircularProgressWithLabel>
+                            <Typography variant="body2" sx={{ mt: 1 }}>
+                              Target: NPR {dailySalesTarget.toFixed(0)}
+                            </Typography>
+                          </Box>
+                        </Grid>
+                        <Grid item xs={6}>
+                          <Box display="flex" flexDirection="column" alignItems="center">
+                            <TrendingUpIcon sx={{ fontSize: 30, mb: 1, color: 'primary.main' }} />
+                            <CircularProgressWithLabel
+                              value={dailyProfitPercentage}
+                              size={80}
+                              thickness={7}
+                              color={dailyProfitPercentage > 100 ? 'success' : 'primary'}
+                            >
+                              <Typography fontSize={10} fontWeight="bold">
+                                {dailyProfitPercentage.toFixed(2)}%
+                              </Typography>
+                            </CircularProgressWithLabel>
+                            <Typography variant="body2" sx={{ mt: 1 }}>
+                              Target: NPR {dailyProfitTarget.toFixed(0)}
+                            </Typography>
+                          </Box>
+                        </Grid>
+                      </Grid>
+                    </CardContent>
+                  </Card>
+                </Grid>
+                {/* Total Goal Progress (right) */}
+                <Grid item xs={12} md={6}>
+                  <Card elevation={4} sx={{ backgroundColor: '#f9f9f9' }}>
+                    <CardContent sx={{ textAlign: 'center' }}>
+                      <Typography variant="h6" gutterBottom>Goal Progress ({goal.durationMonths} Months)</Typography>
+                      <Grid container spacing={2} justifyContent="center">
+                        <Grid item xs={6}>
+                          <Box display="flex" flexDirection="column" alignItems="center">
+                            <MoneyIcon sx={{ fontSize: 30, mb: 1, color: 'primary.main' }} />
+                            <CircularProgressWithLabel
+                              value={totalGoalSalesPercentage}
+                              size={80}
+                              thickness={7}
+                              color={totalGoalSalesPercentage > 100 ? 'success' : 'primary'}
+                            >
+                              <Typography fontSize={10} fontWeight="bold">
+                                {totalGoalSalesPercentage.toFixed(2)}%
+                              </Typography>
+                            </CircularProgressWithLabel>
+                            <Typography variant="body2" sx={{ mt: 1 }}>
+                              Sales: NPR {goal?.targetAmount?.toLocaleString()}
+                            </Typography>
+                          </Box>
+                        </Grid>
+                        <Grid item xs={6}>
+                          <Box display="flex" flexDirection="column" alignItems="center">
+                            <TrendingUpIcon sx={{ fontSize: 30, mb: 1, color: 'primary.main' }} />
+                            <CircularProgressWithLabel
+                              value={totalGoalProfitPercentage}
+                              size={80}
+                              thickness={7}
+                              color={totalGoalProfitPercentage > 100 ? 'success' : 'primary'}
+                            >
+                              <Typography fontSize={10} fontWeight="bold">
+                                {totalGoalProfitPercentage.toFixed(2)}%
+                              </Typography>
+                            </CircularProgressWithLabel>
+                            <Typography variant="body2" sx={{ mt: 1 }}>
+                              Profit: NPR {goal?.targetProfit?.toLocaleString()}
+                            </Typography>
+                          </Box>
+                        </Grid>
+                      </Grid>
+                    </CardContent>
+                  </Card>
+                </Grid>
+              </Grid>
+            </Paper>
+          )}
+        </>
       )}
 
       {/* Days left in Goal */}
       {goal && goalDaysLeft !== null && (
-        <Box sx={{ mb: 2, textAlign: 'right' }}>
+        <Box sx={{ mb: 4, textAlign: 'right' }}>
           <Typography variant="subtitle2" color="text.secondary">
             {goalDaysLeft >= 0
               ? `${goalDaysLeft} day${goalDaysLeft > 1 ? 's' : ''} left to achieve your goal`
@@ -757,7 +788,7 @@ const AnalyticsPage: React.FC = () => {
             justifyContent: 'center',
             minHeight: 180,
           }}>
-            <Typography variant="h6" gutterBottom sx={{ fontWeight: 700, letterSpacing: 1, color: 'secondary.main', mb: 2 }}>1 Month Performance</Typography>
+            <Typography variant="h6" gutterBottom sx={{ fontWeight: 700, letterSpacing: 1, color: 'primary.main', mb: 2 }}>1 Month Performance</Typography>
             {isLoadingMonthly ? (
               <CircularProgress size={24} />
             ) : errorMonthly ? (
