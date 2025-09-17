@@ -11,6 +11,11 @@ dotenv.config();
 
 const app = express();
 
+// Health check endpoint to keep the server alive
+app.get('/api/health', (req: Request, res: Response) => {
+  res.status(200).json({ status: 'alive' });
+});
+
 // Middleware
 app.use(cors({ origin: ['http://localhost:5173', 'https://inventory-manager-eight-fawn.vercel.app'] }));
 app.use(express.json());
@@ -31,11 +36,6 @@ app.use('/api/goal', goalRoutes);
 // Base route
 app.get('/', (req: Request, res: Response) => {
   res.json({ message: 'Welcome to Inventory Manager API' });
-});
-
-// Health check endpoint to keep the server alive
-app.get('/api/health', (req: Request, res: Response) => {
-  res.status(200).json({ status: 'alive' });
 });
 
 // 404 handler
