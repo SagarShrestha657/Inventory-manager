@@ -21,6 +21,7 @@ import {
   History as HistoryIcon,
   TrendingUp as TrendingUpIcon,
   MonetizationOn as MoneyIcon,
+  Category as CategoryIcon,
 } from '@mui/icons-material';
 
 const ActionCard = styled(Card)(({ theme }) => ({
@@ -77,11 +78,11 @@ const Dashboard: React.FC = () => {
       action: () => navigate('/analytics'),
     },
     {
-      title: 'Inventory Management',
-      description: 'Manage your product inventory',
-      icon: <InventoryIcon fontSize="large" />,
+      title: 'Manage Categories',
+      description: 'Organize your products into categories',
+      icon: <CategoryIcon fontSize="large" />,
       color: 'primary.main',
-      action: () => navigate('/products'),
+      action: () => navigate('/categories'),
     },
     {
       title: 'View History',
