@@ -69,6 +69,7 @@ const ANALYTICS_TYPES = [
   { value: 'new_item', label: 'New Item' },
   { value: 'item_deleted', label: 'Item Deleted' },
   { value: 'stock_sold', label: 'Stock Sold' },
+  { value: 'most_sold_stock', label: 'Most Sold Stock' },
 ];
 
 const API_URL = `${API_BASE_URL}/inventory`;
@@ -899,6 +900,53 @@ const AnalyticsPage: React.FC = () => {
                 let footerContent: React.ReactNode = null;
 
                 switch (analyticsType) {
+                  case 'most_sold_stock':
+                    columns = [
+                      { label: 'Product Name', key: 'productName' },
+                      { label: 'Total Sold Quantity', key: 'quantity' },
+                      { label: 'Total Sell Value', key: 'sellValue' },
+                      { label: 'Total Buy Value', key: 'buyValue' },
+                      { label: 'Total Profit', key: 'profit' },
+                      { label: 'Profit Margin', key: 'margin' },
+                    ];
+                    const soldItems = historyData.filter(r => r.type === 'reduce');
+                    const aggregatedData = soldItems.reduce((acc, r) => {
+                      const productName = r.productName;
+                      if (!acc[productName]) {
+                        acc[productName] = {
+                          productName,
+                          quantity: 0,
+                          sellValue: 0,
+                          buyValue: 0,
+                          profit: 0,
+                        };
+                      }
+                      const quantity = Math.abs(r.changeQuantity);
+                      const sellValue = (r.priceAtTransaction || 0) * quantity;
+                      const buyValue = (r.buyingPriceAtTransaction || 0) * quantity;
+                      const profit = sellValue - buyValue;
+
+                      acc[productName].quantity += quantity;
+                      acc[productName].sellValue += sellValue;
+                      acc[productName].buyValue += buyValue;
+                      acc[productName].profit += profit;
+
+                      return acc;
+                    }, {} as Record<string, { productName: string; quantity: number; sellValue: number; buyValue: number; profit: number; }>);
+
+                    rows = Object.values(aggregatedData)
+                      .sort((a, b) => b.profit - a.profit)
+                      .map(item => {
+                        const margin = item.sellValue > 0 ? (item.profit / item.sellValue) * 100 : 0;
+                        return {
+                          ...item,
+                          sellValue: `NPR ${item.sellValue.toFixed(2)}`,
+                          buyValue: `NPR ${item.buyValue.toFixed(2)}`,
+                          profit: `NPR ${item.profit.toFixed(2)}`,
+                          margin: `${margin.toFixed(2)}%`,
+                        };
+                      });
+                    break;
                   case 'stock_added':
                     columns = [
                       { label: 'Product Name', key: 'productName' },
