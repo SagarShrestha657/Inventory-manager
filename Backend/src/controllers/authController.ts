@@ -91,6 +91,7 @@ export const confirmDeleteAccount = async (req: any, res: any) => {
     res.status(500).json({ message: 'Server error.' });
   }
 };
+
 // Change Password (Authenticated)
 export const changePassword = async (req: any, res: any) => {
   try {
@@ -140,7 +141,7 @@ export const register = async (req: Request, res: Response) => {
     // Generate OTP for email verification
     const otp = crypto.randomBytes(3).toString('hex').toUpperCase(); // 6 character alphanumeric OTP
     user.otp = otp;
-    user.otpExpires = new Date(Date.now() + 3600000); // OTP expires in 1 hour
+    user.otpExpires = new Date(Date.now() + 3600000); // 1 hour
     await user.save();
 
     // Send OTP via email
@@ -211,7 +212,7 @@ export const login = async (req: Request, res: Response) => {
       // Generate new OTP for re-verification
       const otp = crypto.randomBytes(3).toString('hex').toUpperCase(); // 6 character alphanumeric OTP
       user.otp = otp;
-      user.otpExpires = new Date(Date.now() + 3600000); // OTP expires in 1 hour
+      user.otpExpires = new Date(Date.now() + 3600000); // 1 hour
       await user.save();
 
       // Send OTP via email
@@ -287,5 +288,34 @@ export const resetPassword = async (req: Request, res: Response) => {
   } catch (err: any) {
     console.error(err.message);
     res.status(500).send('Server error');
+  }
+};
+
+// Update Username
+export const updateUsername = async (req: any, res: any) => {
+  try {
+    const userId = req.user?.id;
+    const { newUsername, password } = req.body;
+    if (!userId) return res.status(401).json({ message: 'Unauthorized' });
+    if (!newUsername || !password) return res.status(400).json({ message: 'New username and password required.' });
+
+    const user = await User.findById(userId).select('+password');
+    if (!user) return res.status(404).json({ message: 'User not found.' });
+
+    const isMatch = await bcrypt.compare(password, user.password || '');
+    if (!isMatch) return res.status(400).json({ message: 'Password is incorrect.' });
+
+    // Check if new username is already in use
+    const existingUser = await User.findOne({ username: newUsername });
+    if (existingUser && existingUser.id !== userId) {
+      return res.status(400).json({ message: 'This username is already taken.' });
+    }
+
+    user.username = newUsername;
+    await user.save();
+
+    res.status(200).json({ message: 'Username changed successfully.' });
+  } catch (err) {
+    res.status(500).json({ message: 'Server error.' });
   }
 };

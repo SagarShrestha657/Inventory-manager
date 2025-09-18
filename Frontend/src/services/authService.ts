@@ -48,6 +48,16 @@ const confirmDeleteAccount = async (otp: string) => {
   return response.data;
 };
 
+const changeUsername = async (newUsername: string, password: string) => {
+  const token = useAuthStore.getState().token;
+  if (!token) throw new Error('Not authenticated');
+  const response = await axios.put(
+    `${API_URL}/update-username`,
+    { newUsername, password },
+    { headers: { 'x-auth-token': token } }
+  );
+  return response.data;
+};
 
 const register = async (userData: any) => {
   const response = await axios.post(`${API_URL}/register`, userData);
@@ -105,6 +115,7 @@ const authService = {
   changePasswordWithOtp,
   requestDeleteAccount,
   confirmDeleteAccount,
+  changeUsername,
   logout,
 };
 

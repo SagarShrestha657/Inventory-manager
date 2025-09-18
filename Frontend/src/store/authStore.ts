@@ -7,6 +7,7 @@ interface AuthState {
   email: string | null;
   isAuthenticated: boolean;
   setToken: (token: string, userId: string, username: string, email: string) => void;
+  setUsername: (username: string) => void; // Add setUsername to AuthState
   logout: () => void;
 }
 
@@ -23,6 +24,11 @@ const useAuthStore = create<AuthState>((set) => ({
     localStorage.setItem('username', username);
     localStorage.setItem('email', email);
     set({ token, userId, username, email, isAuthenticated: true });
+  },
+
+  setUsername: (username: string) => {
+    localStorage.setItem('username', username);
+    set({ username });
   },
 
   logout: () => {

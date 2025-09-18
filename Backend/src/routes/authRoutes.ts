@@ -1,5 +1,5 @@
 import express from 'express';
-import { register, login, forgotPassword, resetPassword, verifyOtp, changePassword, requestDeleteAccount, confirmDeleteAccount, requestChangePasswordOtp, changePasswordWithOtp } from '../controllers/authController';
+import { register, login, forgotPassword, resetPassword, verifyOtp, changePassword, requestDeleteAccount, confirmDeleteAccount, requestChangePasswordOtp, changePasswordWithOtp, updateUsername } from '../controllers/authController';
 import auth from '../middleware/authMiddleware';
 
 const router = express.Router();
@@ -11,6 +11,9 @@ router.post('/change-password-otp', auth, changePasswordWithOtp);
 router.post('/request-delete-account', auth, requestDeleteAccount);
 router.post('/confirm-delete-account', auth, confirmDeleteAccount);
 
+// Change Username
+router.put('/update-username', auth, updateUsername);
+
 router.post('/register', register);
 router.post('/verify-otp', verifyOtp);
 router.post('/login', login);
@@ -21,4 +24,3 @@ router.post('/reset-password', resetPassword);
 router.post('/change-password', auth, changePassword);
 
 export default router;
-

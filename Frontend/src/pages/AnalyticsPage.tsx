@@ -1,7 +1,8 @@
 import React, { useState, useEffect, useMemo } from 'react';
 import axios from 'axios';
-import { useSnackbar } from 'notistack';
 import API_BASE_URL from '../config';
+import { EditGoalDialog } from '../components/analysis/EditGoalDialog';
+import { SetGoalDialog } from '../components/analysis/SetGoalDialog';
 // Inventory history type for analytics
 interface IInventoryHistoryItem {
   _id: string;
@@ -36,14 +37,8 @@ import {
   TableBody,
   TableFooter,
   Button,
-  Dialog,
-  DialogTitle,
-  DialogContent,
-  DialogActions,
-  TextField,
   Card,
   CardContent,
-  styled,
   Avatar,
   useTheme,
   keyframes,
@@ -76,7 +71,7 @@ const API_URL = `${API_BASE_URL}/inventory`;
 const GOALS_API_URL = `${API_BASE_URL}/goal`;
 
 // Interface for goal data
-interface IGoal {
+export interface IGoal {
   _id?: string;
   targetAmount: number;
   targetProfit: number;
@@ -111,13 +106,7 @@ const getAuthHeaders = () => {
   };
 };
 
-// Custom CircularProgress component for goal
-const GoalCircularProgress = styled(Box)(() => ({
-  position: 'relative',
-  display: 'inline-flex',
-  alignItems: 'center',
-  justifyContent: 'center',
-}));
+
 
 // Animated CircularProgress that fills based on percentage
 const pulse = keyframes`
@@ -207,17 +196,13 @@ const fetchMonthlyAnalytics = async (): Promise<MonthlyAnalytics> => {
 
 
 const AnalyticsPage: React.FC = () => {
-  const { enqueueSnackbar } = useSnackbar();
-  // Analytics type filter state for the last table
+
   const [analyticsType, setAnalyticsType] = useState('stock_sold');
   const [period, setPeriod] = useState<'thisMonth' | 'lastMonth' | 'last3Months' | 'next3Months' | 'day' | '10days' | 'month' | '3months' | 'custom' | 'all' | string>('thisMonth');
   const [customStartDate, setCustomStartDate] = useState<Date | null>(null);
   const [customEndDate, setCustomEndDate] = useState<Date | null>(null);
-  const [goalDialogOpen, setGoalDialogOpen] = useState(false);
-  const [editGoalDialogOpen, setEditGoalDialogOpen] = useState(false);
-  const [salesTarget, setSalesTarget] = useState('');
-  const [profitTarget, setProfitTarget] = useState('');
-  const [durationMonths, setDurationMonths] = useState('1');
+  const [isSetGoalDialogOpen, setIsSetGoalDialogOpen] = useState(false);
+  const [isEditGoalDialogOpen, setIsEditGoalDialogOpen] = useState(false);
   let currentGoalMonth = 1;
 
 
@@ -359,89 +344,6 @@ const AnalyticsPage: React.FC = () => {
   const dailySalesPercentage = dailySalesTarget > 0 ? (dailySales / dailySalesTarget) * 100 : 0;
   const dailyProfitPercentage = dailyProfitTarget > 0 ? (dailyProfit / dailyProfitTarget) * 100 : 0;
 
-  // Dialog open logic
-  const openSetGoalDialog = () => {
-    setSalesTarget('');
-    setProfitTarget('');
-    setDurationMonths('1');
-    setGoalDialogOpen(true);
-  };
-
-  const openEditGoalDialog = () => {
-    setSalesTarget(goal?.targetAmount?.toString() || '');
-    setProfitTarget(goal?.targetProfit?.toString() || '');
-    setDurationMonths(goal?.durationMonths?.toString() || '1');
-    setEditGoalDialogOpen(true);
-  };
-
-  // Save logic
-
-  const handleEditgoal = async () => {
-    if (!salesTarget || !profitTarget || !durationMonths) {
-      enqueueSnackbar('Please fill in all fields', { variant: 'error' });
-      return;
-    }
-    const salesTargetNum = Number(salesTarget);
-    const profitTargetNum = Number(profitTarget);
-    if (isNaN(salesTargetNum) || salesTargetNum <= 0) {
-      enqueueSnackbar('Sales target must be a positive number', { variant: 'error' });
-      return;
-    }
-    if (isNaN(profitTargetNum) || profitTargetNum <= 0) {
-      enqueueSnackbar('Profit target must be a positive number', { variant: 'error' });
-      return;
-    }
-    try {
-      await axios.put(GOALS_API_URL, {
-        targetAmount: salesTargetNum,
-        targetProfit: profitTargetNum,
-        durationMonths: Math.max(1, Math.floor(Number(durationMonths))),
-      }, getAuthHeaders());
-      refetchGoal();
-      setEditGoalDialogOpen(false);
-      enqueueSnackbar('Goal saved successfully!', { variant: 'success' });
-    } catch (error) {
-      enqueueSnackbar('Failed to save goal. Please try again.', { variant: 'error' });
-    }
-  };
-
-  const handleSaveGoals = async () => {
-    if (!salesTarget || !profitTarget || !durationMonths) {
-      enqueueSnackbar('Please fill in all fields', { variant: 'error' });
-      return;
-    }
-    const salesTargetNum = Number(salesTarget);
-    const profitTargetNum = Number(profitTarget);
-    if (isNaN(salesTargetNum) || salesTargetNum <= 0) {
-      enqueueSnackbar('Sales target must be a positive number', { variant: 'error' });
-      return;
-    }
-    if (isNaN(profitTargetNum) || profitTargetNum <= 0) {
-      enqueueSnackbar('Profit target must be a positive number', { variant: 'error' });
-      return;
-    }
-    try {
-      const startDate = new Date();
-      startDate.setHours(0, 0, 0, 0);
-
-      const deadline = new Date(startDate);
-      deadline.setMonth(deadline.getMonth() + Number(durationMonths));
-      deadline.setHours(23, 59, 59, 999);
-
-      await axios.post(GOALS_API_URL, {
-        targetAmount: salesTargetNum,
-        targetProfit: profitTargetNum,
-        durationMonths: Math.max(1, Math.floor(Number(durationMonths))),
-        deadline: deadline,
-        startDate: startDate
-      }, getAuthHeaders());
-      refetchGoal();
-      setGoalDialogOpen(false);
-      enqueueSnackbar('Goal saved successfully!', { variant: 'success' });
-    } catch (error) {
-      enqueueSnackbar('Failed to save goal. Please try again.', { variant: 'error' });
-    }
-  };
 
   // Calculate percentages and progress
   const theme = useTheme();
@@ -502,7 +404,7 @@ const AnalyticsPage: React.FC = () => {
               <Button
                 variant="outlined"
                 startIcon={<FlagIcon />}
-                onClick={openSetGoalDialog}
+                onClick={() => setIsSetGoalDialogOpen(true)}
                 sx={{
                   color: 'white',
                   borderColor: 'rgba(255, 255, 255, 0.7)',
@@ -520,7 +422,7 @@ const AnalyticsPage: React.FC = () => {
                 <Button
                   variant="outlined"
                   startIcon={<FlagIcon />}
-                  onClick={openSetGoalDialog}
+                  onClick={() => setIsSetGoalDialogOpen(true)}
                   sx={{
                     color: 'white',
                     borderColor: 'rgba(255, 255, 255, 0.7)',
@@ -536,7 +438,7 @@ const AnalyticsPage: React.FC = () => {
                 <Button
                   variant="outlined"
                   startIcon={<EditIcon />}
-                  onClick={openEditGoalDialog}
+                  onClick={() => setIsEditGoalDialogOpen(true)}
                   sx={{
                     color: 'white',
                     borderColor: 'rgba(255, 255, 255, 0.7)',
@@ -1109,118 +1011,20 @@ const AnalyticsPage: React.FC = () => {
         </Grid>
       </Grid>
 
-      {/* Goal Setting Dialog */}
-      <Dialog open={goalDialogOpen} onClose={() => setGoalDialogOpen(false)} maxWidth="sm" fullWidth>
-        <DialogTitle>
-          Set Your Goal
-        </DialogTitle>
-        <DialogContent>
-          <Box mt={2}>
-            <Grid container spacing={2}>
-              <Grid item xs={12}>
-                <TextField
-                  fullWidth
-                  label="Monthly Sales Target (NPR)"
-                  type="number"
-                  value={salesTarget}
-                  onChange={(e) => setSalesTarget(e.target.value)}
-                  sx={{ mb: 3 }}
-                  helperText="Your target sales revenue for the duration"
-                />
-                <TextField
-                  fullWidth
-                  label="Monthly Profit Target (NPR)"
-                  type="number"
-                  value={profitTarget}
-                  onChange={(e) => setProfitTarget(e.target.value)}
-                  sx={{ mb: 3 }}
-                  helperText="Your target profit for the duration"
-                />
-                <TextField
-                  fullWidth
-                  label="Duration (Months)"
-                  type="number"
-                  value={durationMonths}
-                  onChange={(e) => {
-                    const value = e.target.value;
-                    if (value === '' || (Number(value) > 0 && Number.isInteger(Number(value)))) {
-                      setDurationMonths(value);
-                    }
-                  }}
-                  inputProps={{ min: 1, step: 1 }}
-                  helperText="Number of months for this goal"
-                />
-              </Grid>
-            </Grid>
-          </Box>
-        </DialogContent>
-        <DialogActions>
-          <Button onClick={() => setGoalDialogOpen(false)}>Cancel</Button>
-          <Button
-            onClick={handleSaveGoals}
-            variant="contained"
-            disabled={!salesTarget || !profitTarget || !durationMonths}
-          >
-            Save Goal
-          </Button>
-        </DialogActions>
-      </Dialog>
-      <Dialog open={editGoalDialogOpen} onClose={() => setEditGoalDialogOpen(false)} maxWidth="sm" fullWidth>
-        <DialogTitle>
-          Edit Your Goal
-        </DialogTitle>
-        <DialogContent>
-          <Box mt={2}>
-            <Grid container spacing={2}>
-              <Grid item xs={12}>
-                <TextField
-                  fullWidth
-                  label="Monthly Sales Target (NPR)"
-                  type="number"
-                  value={salesTarget}
-                  onChange={(e) => setSalesTarget(e.target.value)}
-                  sx={{ mb: 3 }}
-                  helperText="Your target sales revenue for the duration"
-                />
-                <TextField
-                  fullWidth
-                  label="Monthly Profit Target (NPR)"
-                  type="number"
-                  value={profitTarget}
-                  onChange={(e) => setProfitTarget(e.target.value)}
-                  sx={{ mb: 3 }}
-                  helperText="Your target profit for the duration"
-                />
-                <TextField
-                  fullWidth
-                  label="Duration (Months)"
-                  type="number"
-                  value={durationMonths}
-                  onChange={(e) => {
-                    const value = e.target.value;
-                    if (value === '' || (Number(value) > 0 && Number.isInteger(Number(value)))) {
-                      setDurationMonths(value);
-                    }
-                  }}
-                  inputProps={{ min: 1, step: 1 }}
-                  helperText="Number of months for this goal"
-                />
-              </Grid>
-            </Grid>
-          </Box>
-        </DialogContent>
-        <DialogActions>
-          <Button onClick={() => setEditGoalDialogOpen(false)}>Cancel</Button>
-          <Button
-            onClick={handleEditgoal}
-            variant="contained"
-            disabled={!salesTarget || !profitTarget || !durationMonths}
-          >
-            Save Goal
-          </Button>
-        </DialogActions>
-      </Dialog>
+      <SetGoalDialog
+        open={isSetGoalDialogOpen}
+        onClose={() => setIsSetGoalDialogOpen(false)}
+        refetchGoal={refetchGoal}
+      />
 
+      {goal && (
+        <EditGoalDialog
+          open={isEditGoalDialogOpen}
+          onClose={() => setIsEditGoalDialogOpen(false)}
+          goal={goal}
+          refetchGoal={refetchGoal}
+        />
+      )}
     </Paper>
   );
 };
