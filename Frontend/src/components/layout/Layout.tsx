@@ -69,8 +69,8 @@ export const Layout: React.FC<LayoutProps> = ({ children }) => {
       <AppBar
         position="fixed"
         sx={{
-          width: { sm: `calc(100% - ${drawerWidth}px)` },
-          ml: { sm: `${drawerWidth}px` },
+          width: { xl2: `calc(100% - ${drawerWidth}px)` },
+          ml: { xl2: `${drawerWidth}px` },
           backgroundColor: theme.palette.background.paper, // Use paper background for a clean look
           color: theme.palette.text.primary, // Use primary text color for content
           boxShadow: 'none', // Remove shadow for minimalist look
@@ -84,7 +84,7 @@ export const Layout: React.FC<LayoutProps> = ({ children }) => {
             aria-label="open drawer"
             edge="start"
             onClick={handleDrawerToggle}
-            sx={{ mr: 2, display: { sm: 'none' } }}
+            sx={{ mr: 2, display: { xl2: 'none' } }}
           >
             <MenuIcon />
           </IconButton>
@@ -93,7 +93,7 @@ export const Layout: React.FC<LayoutProps> = ({ children }) => {
       </AppBar>
       <Box
         component="nav"
-        sx={{ width: { sm: drawerWidth }, flexShrink: { sm: 0 } }}
+        sx={{ width: { xl2: drawerWidth }, flexShrink: { xl2: 0 } }}
         aria-label="mailbox folders"
       >
         <Drawer
@@ -105,7 +105,7 @@ export const Layout: React.FC<LayoutProps> = ({ children }) => {
             keepMounted: true, // Better open performance on mobile.
           }}
           sx={{
-            display: { xs: 'block', sm: 'none' },
+            display: { xs: 'block', sm: 'block', md: 'block', xl2: 'none' },
             '& .MuiDrawer-paper': {
               boxSizing: 'border-box',
               width: drawerWidth,
@@ -117,7 +117,7 @@ export const Layout: React.FC<LayoutProps> = ({ children }) => {
         <Drawer
           variant="permanent"
           sx={{
-            display: { xs: 'none', sm: 'block' },
+            display: { xs: 'none', xl2: 'block' },
             '& .MuiDrawer-paper': {
               boxSizing: 'border-box',
               width: drawerWidth,
@@ -133,7 +133,7 @@ export const Layout: React.FC<LayoutProps> = ({ children }) => {
         sx={{
           flexGrow: 1,
           p: 3,
-          width: { sm: `calc(100% - ${drawerWidth}px)` },
+          width: { xl2: `calc(100% - ${drawerWidth}px)` },
           mt: 8, // Height of the AppBar
         }}
       >

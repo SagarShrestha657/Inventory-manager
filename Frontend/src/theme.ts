@@ -1,6 +1,16 @@
 import { createTheme, responsiveFontSizes } from '@mui/material/styles';
 
 let theme = createTheme({
+  breakpoints: {
+    values: {
+      xs: 0,
+      sm: 600,
+      md: 900,
+      lg: 1200,
+      xl: 1536,
+      xl2: 1378, // Custom breakpoint for 1378px
+    },
+  },
   palette: {
     primary: {
       main: '#1976D2', // Professional blue - perfect for business applications

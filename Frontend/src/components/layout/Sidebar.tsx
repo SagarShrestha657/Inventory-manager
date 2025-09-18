@@ -38,7 +38,7 @@ interface SidebarProps {
   onClose: () => void;
 }
 
-export const Sidebar: React.FC<SidebarProps> = ({ open }) => {
+export const Sidebar: React.FC<SidebarProps> = ({ open, onClose }) => {
   const theme = useTheme();
   const location = useLocation();
 
@@ -83,6 +83,7 @@ export const Sidebar: React.FC<SidebarProps> = ({ open }) => {
               component={Link}
               to={item.path}
               selected={location.pathname === item.path}
+              onClick={onClose} // Add this line to close the sidebar on item click
               sx={{
                 '&.Mui-selected': {
                   backgroundColor: theme.palette.primary.light,
