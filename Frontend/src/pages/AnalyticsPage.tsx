@@ -498,7 +498,7 @@ const AnalyticsPage: React.FC = () => {
             Inventory Analytics
           </Typography>
           <Box>
-            {!goal && (
+            {!goal?.targetAmount && (
               <Button
                 variant="outlined"
                 startIcon={<FlagIcon />}
