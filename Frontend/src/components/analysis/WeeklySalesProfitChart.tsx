@@ -58,8 +58,8 @@ const CustomTooltip = ({ active, payload, label }: any) => {
 const WeeklySalesProfitChart: React.FC = () => {
   const [currentDate, setCurrentDate] = useState(new Date());
 
-  const weekStart = startOfWeek(currentDate);
-  const weekEnd = endOfWeek(currentDate);
+  const weekStart = startOfWeek(currentDate, { weekStartsOn: 0 });
+  const weekEnd = endOfWeek(currentDate, { weekStartsOn: 0 });
 
   const { data, isLoading, error } = useQuery({
     queryKey: ['weeklyAnalytics', weekStart.toISOString()],
