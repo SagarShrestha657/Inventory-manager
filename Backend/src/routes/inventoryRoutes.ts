@@ -31,6 +31,7 @@ router.get('/history', inventoryController.getInventoryHistory);
 // Analytics Routes
 router.get('/analytics/daily', inventoryController.getDailyAnalytics);
 router.get('/analytics/monthly', inventoryController.getMonthlyAnalytics);
+router.get('/analytics/weekly', inventoryController.getWeeklyAnalytics);
 router.get('/analytics/top-selling', inventoryController.getTopSellingProducts);
 
 // Removed deletion routes for history records as per user's decision.

@@ -456,6 +456,62 @@ export const getMonthlyAnalytics = async (req: Request, res: Response): Promise<
   }
 };
 
+export const getWeeklyAnalytics = async (req: Request, res: Response): Promise<void> => {
+  try {
+    const userId = req.user?.id;
+    if (!userId) {
+      res.status(401).json({ message: 'Unauthorized: User ID not found.' });
+      return;
+    }
+
+    const { startDate: startDateString } = req.query;
+    const startDate = startDateString ? new Date(startDateString as string) : new Date();
+    startDate.setHours(0, 0, 0, 0);
+
+    const weeklyData = [];
+
+    for (let i = 0; i < 7; i++) {
+      const day = new Date(startDate);
+      day.setDate(day.getDate() + i);
+
+      const startOfDay = new Date(day);
+      startOfDay.setHours(0, 0, 0, 0);
+      const endOfDay = new Date(day);
+      endOfDay.setHours(23, 59, 59, 999);
+
+      const dailyHistory = await InventoryHistory.find({
+        userId: new Types.ObjectId(userId),
+        timestamp: { $gte: startOfDay, $lte: endOfDay },
+      });
+
+      let totalSellValue = 0;
+      let dailyProfit = 0;
+
+      dailyHistory.forEach(record => {
+        if (record.type === 'reduce') {
+          const sell = (record.priceAtTransaction || 0) * record.changeQuantity;
+          const buy = (record.buyingPriceAtTransaction || 0) * record.changeQuantity;
+          totalSellValue += sell;
+          dailyProfit += sell - buy;
+        }
+      });
+
+      weeklyData.push({
+        date: day.toISOString().split('T')[0],
+        name: day.toLocaleDateString('en-US', { weekday: 'short' }),
+        sales: parseFloat(totalSellValue.toFixed(2)),
+        profit: parseFloat(dailyProfit.toFixed(2)),
+      });
+    }
+
+    res.status(200).json(weeklyData);
+  } catch (error) {
+    console.error('Error fetching weekly analytics:', error);
+    res.status(500).json({ message: 'Error fetching weekly analytics', error });
+  }
+};
+
+
 export const getTopSellingProducts = async (req: Request, res: Response): Promise<void> => {
   try {
     const userId = req.user?.id; // Get userId from authenticated user

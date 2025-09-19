@@ -3,6 +3,7 @@ import axios from 'axios';
 import API_BASE_URL from '../config';
 import { EditGoalDialog } from '../components/analysis/EditGoalDialog';
 import { SetGoalDialog } from '../components/analysis/SetGoalDialog';
+import WeeklySalesProfitChart from '../components/analysis/WeeklySalesProfitChart';
 // Inventory history type for analytics
 interface IInventoryHistoryItem {
   _id: string;
@@ -471,13 +472,13 @@ const AnalyticsPage: React.FC = () => {
                 <Grid item xs={6}>
                   <Typography variant="button" display="block" gutterBottom>Total Sales</Typography>
                   <Typography variant="h5" color={totalSalesForGoal >= goal.targetAmount ? 'success.main' : 'error.main'}>
-                    NPR {totalSalesForGoal.toLocaleString()} / {goal.targetAmount.toLocaleString()}
+                    INR {totalSalesForGoal.toLocaleString()} / {goal.targetAmount.toLocaleString()}
                   </Typography>
                 </Grid>
                 <Grid item xs={6}>
                   <Typography variant="button" display="block" gutterBottom>Total Profit</Typography>
                   <Typography variant="h5" color={totalProfitForGoal >= goal.targetProfit ? 'success.main' : 'error.main'}>
-                    NPR {totalProfitForGoal.toLocaleString()} / {goal.targetProfit.toLocaleString()}
+                    INR {totalProfitForGoal.toLocaleString()} / {goal.targetProfit.toLocaleString()}
                   </Typography>
                 </Grid>
               </Grid>
@@ -527,7 +528,7 @@ const AnalyticsPage: React.FC = () => {
                               </Typography>
                             </CircularProgressWithLabel>
                             <Typography variant="body2" sx={{ mt: 1 }}>
-                              Target: NPR {dailySalesTarget.toFixed(0)}
+                              Target: INR {dailySalesTarget.toFixed(0)}
                             </Typography>
                           </Box>
                         </Grid>
@@ -545,7 +546,7 @@ const AnalyticsPage: React.FC = () => {
                               </Typography>
                             </CircularProgressWithLabel>
                             <Typography variant="body2" sx={{ mt: 1 }}>
-                              Target: NPR {dailyProfitTarget.toFixed(0)}
+                              Target: INR {dailyProfitTarget.toFixed(0)}
                             </Typography>
                           </Box>
                         </Grid>
@@ -573,7 +574,7 @@ const AnalyticsPage: React.FC = () => {
                               </Typography>
                             </CircularProgressWithLabel>
                             <Typography variant="body2" sx={{ mt: 1 }}>
-                              Sales: NPR {goal?.targetAmount?.toLocaleString()}
+                              Sales: INR {goal?.targetAmount?.toLocaleString()}
                             </Typography>
                           </Box>
                         </Grid>
@@ -591,7 +592,7 @@ const AnalyticsPage: React.FC = () => {
                               </Typography>
                             </CircularProgressWithLabel>
                             <Typography variant="body2" sx={{ mt: 1 }}>
-                              Profit: NPR {goal?.targetProfit?.toLocaleString()}
+                              Profit: INR {goal?.targetProfit?.toLocaleString()}
                             </Typography>
                           </Box>
                         </Grid>
@@ -648,7 +649,7 @@ const AnalyticsPage: React.FC = () => {
                       <ShoppingCartIcon fontSize="medium" />
                     </Avatar>
                     <Typography variant="caption" color="textSecondary">Buy Value</Typography>
-                    <Typography variant="subtitle1" fontWeight={700} color="info.main">NPR {dailyAnalytics.totalBuyValue.toFixed(2)}</Typography>
+                    <Typography variant="subtitle1" fontWeight={700} color="info.main">INR {dailyAnalytics.totalBuyValue.toFixed(2)}</Typography>
                   </Box>
                 </Grid>
                 <Grid item xs={12} sm={4}>
@@ -657,7 +658,7 @@ const AnalyticsPage: React.FC = () => {
                       <MonetizationOnIcon fontSize="medium" />
                     </Avatar>
                     <Typography variant="caption" color="textSecondary">Sell Value</Typography>
-                    <Typography variant="subtitle1" fontWeight={700} color="primary.main">NPR {dailyAnalytics.totalSellValue.toFixed(2)}</Typography>
+                    <Typography variant="subtitle1" fontWeight={700} color="primary.main">INR {dailyAnalytics.totalSellValue.toFixed(2)}</Typography>
                   </Box>
                 </Grid>
                 <Grid item xs={12} sm={4}>
@@ -667,7 +668,7 @@ const AnalyticsPage: React.FC = () => {
                     </Avatar>
                     <Typography variant="caption" color="textSecondary">Profit</Typography>
                     <Typography variant="subtitle1" fontWeight={700} color={dailyAnalytics.dailyProfit >= 0 ? 'success.main' : 'error.main'}>
-                      NPR {dailyAnalytics.dailyProfit.toFixed(2)}
+                      INR {dailyAnalytics.dailyProfit.toFixed(2)}
                     </Typography>
                   </Box>
                 </Grid>
@@ -704,7 +705,7 @@ const AnalyticsPage: React.FC = () => {
                       <ShoppingCartIcon fontSize="medium" />
                     </Avatar>
                     <Typography variant="caption" color="textSecondary">Buy Value</Typography>
-                    <Typography variant="subtitle1" fontWeight={700} color="info.main">NPR {monthlyAnalytics.totalBuyValue.toFixed(2)}</Typography>
+                    <Typography variant="subtitle1" fontWeight={700} color="info.main">INR {monthlyAnalytics.totalBuyValue.toFixed(2)}</Typography>
                   </Box>
                 </Grid>
                 <Grid item xs={12} sm={4}>
@@ -713,7 +714,7 @@ const AnalyticsPage: React.FC = () => {
                       <MonetizationOnIcon fontSize="medium" />
                     </Avatar>
                     <Typography variant="caption" color="textSecondary">Sell Value</Typography>
-                    <Typography variant="subtitle1" fontWeight={700} color="primary.main">NPR {monthlyAnalytics.totalSellValue.toFixed(2)}</Typography>
+                    <Typography variant="subtitle1" fontWeight={700} color="primary.main">INR {monthlyAnalytics.totalSellValue.toFixed(2)}</Typography>
                   </Box>
                 </Grid>
                 <Grid item xs={12} sm={4}>
@@ -723,13 +724,19 @@ const AnalyticsPage: React.FC = () => {
                     </Avatar>
                     <Typography variant="caption" color="textSecondary">Profit</Typography>
                     <Typography variant="subtitle1" fontWeight={700} color={monthlyAnalytics.monthlyProfit >= 0 ? 'success.main' : 'error.main'}>
-                      NPR {monthlyAnalytics.monthlyProfit.toFixed(2)}
+                      INR {monthlyAnalytics.monthlyProfit.toFixed(2)}
                     </Typography>
                   </Box>
                 </Grid>
               </Grid>
             ) : null}
           </Paper>
+        </Grid>
+      </Grid>
+
+      <Grid container spacing={3} sx={{ mb: 4 }}>
+        <Grid item xs={12}>
+          <WeeklySalesProfitChart />
         </Grid>
       </Grid>
 
@@ -842,9 +849,9 @@ const AnalyticsPage: React.FC = () => {
                         const margin = item.sellValue > 0 ? (item.profit / item.sellValue) * 100 : 0;
                         return {
                           ...item,
-                          sellValue: `NPR ${item.sellValue.toFixed(2)}`,
-                          buyValue: `NPR ${item.buyValue.toFixed(2)}`,
-                          profit: `NPR ${item.profit.toFixed(2)}`,
+                          sellValue: `INR ${item.sellValue.toFixed(2)}`,
+                          buyValue: `INR ${item.buyValue.toFixed(2)}`,
+                          profit: `INR ${item.profit.toFixed(2)}`,
                           margin: `${margin.toFixed(2)}%`,
                         };
                       });
@@ -859,7 +866,7 @@ const AnalyticsPage: React.FC = () => {
                     rows = historyData.filter(r => r.type === 'add').map(r => ({
                       productName: r.productName,
                       quantity: r.changeQuantity,
-                      buyValue: `NPR ${((r.buyingPriceAtTransaction || 0) * r.changeQuantity).toFixed(2)}`,
+                      buyValue: `INR ${((r.buyingPriceAtTransaction || 0) * r.changeQuantity).toFixed(2)}`,
                       date: new Date(r.timestamp)?.toLocaleString(),
                     }));
                     const totalQuantityAdded = historyData.filter(r => r.type === 'add').reduce((acc, r) => acc + r.changeQuantity, 0);
@@ -868,7 +875,7 @@ const AnalyticsPage: React.FC = () => {
                       <TableRow>
                         <TableCell colSpan={1} />
                         <TableCell align="center">Total Quantity: {totalQuantityAdded}</TableCell>
-                        <TableCell align="center">Total Buy Value: NPR {totalBuyValueAdded.toFixed(2)}</TableCell>
+                        <TableCell align="center">Total Buy Value: INR {totalBuyValueAdded.toFixed(2)}</TableCell>
                         <TableCell colSpan={1} />
                       </TableRow>
                     );
@@ -884,8 +891,8 @@ const AnalyticsPage: React.FC = () => {
                     rows = historyData.filter(r => r.type === 'edit_item').map(r => ({
                       productName: r.productName,
                       stock: r.currentQuantity,
-                      buyValue: r.buyingPriceAtTransaction ? `NPR ${r.buyingPriceAtTransaction.toFixed(2)}` : 'N/A',
-                      sellValue: r.priceAtTransaction ? `NPR ${r.priceAtTransaction.toFixed(2)}` : 'N/A',
+                      buyValue: r.buyingPriceAtTransaction ? `INR ${r.buyingPriceAtTransaction.toFixed(2)}` : 'N/A',
+                      sellValue: r.priceAtTransaction ? `INR ${r.priceAtTransaction.toFixed(2)}` : 'N/A',
                       date: new Date(r.timestamp)?.toLocaleString(),
                     }));
                     break;
@@ -906,9 +913,9 @@ const AnalyticsPage: React.FC = () => {
                       return {
                         productName: r.productName,
                         quantity: quantity,
-                        sellValue: `NPR ${sellValue.toFixed(2)}`,
-                        buyValue: `NPR ${buyValue.toFixed(2)}`,
-                        profit: `NPR ${profit.toFixed(2)}`,
+                        sellValue: `INR ${sellValue.toFixed(2)}`,
+                        buyValue: `INR ${buyValue.toFixed(2)}`,
+                        profit: `INR ${profit.toFixed(2)}`,
                         date: new Date(r.timestamp)?.toLocaleString(),
                       };
                     });
@@ -920,9 +927,9 @@ const AnalyticsPage: React.FC = () => {
                       <TableRow>
                         <TableCell />
                         <TableCell align="center">Total: {totalQuantitySold}</TableCell>
-                        <TableCell align="center">NPR {totalSellValue.toFixed(2)}</TableCell>
-                        <TableCell align="center">NPR {totalBuyValueSold.toFixed(2)}</TableCell>
-                        <TableCell align="center">NPR {totalProfit.toFixed(2)}</TableCell>
+                        <TableCell align="center">INR {totalSellValue.toFixed(2)}</TableCell>
+                        <TableCell align="center">INR {totalBuyValueSold.toFixed(2)}</TableCell>
+                        <TableCell align="center">INR {totalProfit.toFixed(2)}</TableCell>
                         <TableCell />
                       </TableRow>
                     );
@@ -937,7 +944,7 @@ const AnalyticsPage: React.FC = () => {
                     rows = historyData.filter(r => r.type === 'new_item').map(r => ({
                       productName: r.productName,
                       stock: r.changeQuantity,
-                      buyValue: `NPR ${((r.buyingPriceAtTransaction || 0) * r.changeQuantity).toFixed(2)}`,
+                      buyValue: `INR ${((r.buyingPriceAtTransaction || 0) * r.changeQuantity).toFixed(2)}`,
                       date: new Date(r.timestamp)?.toLocaleString(),
                     }));
                     const totalInitialStock = historyData.filter(r => r.type === 'new_item').reduce((acc, r) => acc + r.changeQuantity, 0);
@@ -946,7 +953,7 @@ const AnalyticsPage: React.FC = () => {
                       <TableRow>
                         <TableCell colSpan={1} />
                         <TableCell align="center">Total Stock: {totalInitialStock}</TableCell>
-                        <TableCell align="center">Total Buy Value: NPR {totalInitialBuyValue.toFixed(2)}</TableCell>
+                        <TableCell align="center">Total Buy Value: INR {totalInitialBuyValue.toFixed(2)}</TableCell>
                         <TableCell colSpan={1} />
                       </TableRow>
                     );
@@ -961,7 +968,7 @@ const AnalyticsPage: React.FC = () => {
                     rows = historyData.filter(r => r.type === 'delete_item').map(r => ({
                       productName: r.productName,
                       stock: Math.abs(r.changeQuantity),
-                      buyValue: `NPR ${((r.buyingPriceAtTransaction || 0) * Math.abs(r.changeQuantity)).toFixed(2)}`,
+                      buyValue: `INR ${((r.buyingPriceAtTransaction || 0) * Math.abs(r.changeQuantity)).toFixed(2)}`,
                       date: new Date(r.timestamp)?.toLocaleString(),
                     }));
                     const totalDeletedStock = historyData.filter(r => r.type === 'delete_item').reduce((acc, r) => acc + Math.abs(r.changeQuantity), 0);
@@ -970,7 +977,7 @@ const AnalyticsPage: React.FC = () => {
                       <TableRow>
                         <TableCell colSpan={1} />
                         <TableCell align="center">Total Stock: {totalDeletedStock}</TableCell>
-                        <TableCell align="center">Total Buy Value: NPR {totalDeletedBuyValue.toFixed(2)}</TableCell>
+                        <TableCell align="center">Total Buy Value: INR {totalDeletedBuyValue.toFixed(2)}</TableCell>
                         <TableCell colSpan={1} />
                       </TableRow>
                     );
