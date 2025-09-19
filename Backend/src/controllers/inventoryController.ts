@@ -3,6 +3,22 @@ import { Request, Response } from 'express';
 import { Types } from 'mongoose';
 import Inventory, { IInventory } from '../models/inventory';
 import InventoryHistory, { IInventoryHistory } from '../models/InventoryHistory'; // Import InventoryHistory model
+import * as XLSX from 'xlsx'; // Import xlsx library
+import mongoose from 'mongoose';
+import Category from '../models/Category';
+
+// Define a draft interface for history entries before productId is known
+interface IInventoryHistoryDraft {
+  productName: string;
+  sku: string;
+  changeQuantity: number;
+  currentQuantity: number;
+  type: 'add' | 'reduce' | 'new_item' | 'delete_item' | 'edit_item';
+  buyingPriceAtTransaction?: number;
+  priceAtTransaction?: number;
+  userId: Types.ObjectId;
+}
+
 export const updateProductHistory = async (req: Request, res: Response): Promise<void> => {
   try {
     const userId = req.user?.id;
@@ -30,6 +46,7 @@ export const updateProductHistory = async (req: Request, res: Response): Promise
 declare module 'express-serve-static-core' {
   interface Request {
     user?: { id: string }; // Extend Request to include user property
+    file?: Express.Multer.File; // Add file property for multer
   }
 }
 
@@ -600,5 +617,177 @@ export const getTopSellingProducts = async (req: Request, res: Response): Promis
   } catch (error) {
     console.error('Error fetching top selling products:', error);
     res.status(500).json({ message: 'Error fetching top selling products', error });
+  }
+};
+
+
+// ... (other exports and functions)
+
+export const bulkAddProducts = async (req: Request, res: Response): Promise<void> => {
+  const session = await mongoose.startSession(); // Start a session
+  session.startTransaction(); // Start a transaction
+
+  try {
+    const userId = req.user?.id;
+    if (!userId) {
+      await session.abortTransaction();
+      res.status(401).json({ message: 'Unauthorized: User ID not found.' });
+      return;
+    }
+
+    if (!req.file || !req.file.buffer) {
+      await session.abortTransaction();
+      res.status(400).json({ message: 'No file uploaded or file is empty.' });
+      return;
+    }
+
+    const workbook = XLSX.read(req.file.buffer, { type: 'buffer' });
+    const sheetName = workbook.SheetNames[0];
+    const worksheet = workbook.Sheets[sheetName];
+    let jsonProducts: any[] = XLSX.utils.sheet_to_json(worksheet);
+
+    if (jsonProducts.length === 0) {
+      res.status(400).json({ message: 'The uploaded file is empty or has no data.' });
+      return;
+    }
+
+    const requiredHeaders = ['name', 'sku', 'price', 'buyingPrice', 'quantity', 'category'];
+    const uploadedHeaders = Object.keys(jsonProducts[0] || {});
+
+    const missingHeaders = requiredHeaders.filter(header => !uploadedHeaders.includes(header));
+    if (missingHeaders.length > 0) {
+      await session.abortTransaction();
+      res.status(400).json({ message: `Missing required headers: ${missingHeaders.join(', ')}.` });
+      return;
+    }
+
+    // Extract unique category names from the uploaded file
+    const categoryNames = new Set(
+      jsonProducts
+        .map(p => String(p.category || '').trim())
+        .filter(c => c) // Filter out empty category names
+    );
+
+    if (categoryNames.size > 0) {
+      // Find which of these categories already exist for the user
+      const existingCategories = await Category.find({
+        name: { $in: [...categoryNames] },
+        userId
+      }).session(session);
+      const existingCategoryNames = new Set(existingCategories.map(c => c.name));
+
+      // Determine which categories are new
+      const newCategoryNames = [...categoryNames].filter(name => !existingCategoryNames.has(name));
+
+      // If there are new categories, create them
+      if (newCategoryNames.length > 0) {
+        const newCategories = newCategoryNames.map(name => ({
+          name,
+          userId: new Types.ObjectId(userId),
+        }));
+        await Category.insertMany(newCategories, { session });
+      }
+    }
+
+    const productsToSave: IInventory[] = [];
+    const historyEntriesDraft: IInventoryHistoryDraft[] = [];
+    const errors: { row: number; message: string }[] = [];
+
+    for (let i = 0; i < jsonProducts.length; i++) {
+      const row = jsonProducts[i];
+      const rowNum = i + 2; // Account for 0-based index and header row
+
+      try {
+        // Basic validation and type conversion
+        const name = String(row.name || '').trim();
+        const sku = String(row.sku || '').trim();
+        const description = String(row.description || '').trim();
+        const price = Number(row.price);
+        const buyingPrice = Number(row.buyingPrice);
+        const quantity = Number(row.quantity);
+        const category = String(row.category || '').trim();
+
+        if (!name) throw new Error('Product name is required.');
+        if (!sku) throw new Error('SKU is required.');
+        if (isNaN(price) || price <= 0) throw new Error('Price must be a non-negative number.');
+        if (isNaN(buyingPrice) || buyingPrice <= 0) throw new Error('Buying Price must be a non-negative number.');
+        if (isNaN(quantity) || quantity <= 0) throw new Error('Quantity must be a non-negative number.');
+        if (!category) throw new Error('Category is required.');
+
+        // Check for duplicate SKU in the database for the current user (pass session)
+        const existingItem = await Inventory.findOne({ sku, userId }).session(session);
+        if (existingItem) {
+          throw new Error(`SKU '${sku}' already exists.`);
+        }
+
+        // Check for duplicate SKU within the current batch of products to save
+        if (productsToSave.some(p => p.sku === sku)) {
+          throw new Error(`Duplicate SKU '${sku}' within the uploaded file.`);
+        }
+
+        const newProduct: IInventory = new Inventory({
+          name, 
+          sku,
+          description: description || undefined,
+          price,
+          buyingPrice,
+          quantity,
+          category,
+          userId: new Types.ObjectId(userId),
+        });
+        productsToSave.push(newProduct);
+
+        // Create history entry draft without productId initially
+        historyEntriesDraft.push({
+          productName: name,
+          sku: sku,
+          changeQuantity: quantity,
+          currentQuantity: quantity,
+          type: 'new_item',
+          buyingPriceAtTransaction: buyingPrice,
+          priceAtTransaction: price,
+          userId: new Types.ObjectId(userId),
+        });
+
+      } catch (validationError: any) {
+        errors.push({ row: rowNum, message: validationError.message });
+      }
+    }
+
+    if (errors.length > 0) { // If any row had an error, abort the whole transaction
+      await session.abortTransaction();
+      res.status(400).json({ message: 'Errors found in file. No products added.', errors });
+      return;
+    }
+
+    if (productsToSave.length === 0) { // No valid products after all checks
+      await session.abortTransaction();
+      res.status(400).json({ message: 'No products found in the file or all products had errors.' });
+      return;
+    }
+
+    // Insert products (pass session)
+    const savedProducts = await Inventory.insertMany(productsToSave, { session });
+
+    // Map saved product IDs to history entries
+    const historyEntries: IInventoryHistory[] = savedProducts.map((savedProduct, index) => {
+      return new InventoryHistory({ // Explicitly create a Mongoose document
+        ...historyEntriesDraft[index],
+        productId: savedProduct._id,
+      });
+    });
+
+    // Insert history (pass session)
+    await InventoryHistory.insertMany(historyEntries, { session });
+
+    await session.commitTransaction(); // Commit if all successful
+    res.status(200).json({ message: `Successfully added ${savedProducts.length} products.`, errors });
+
+  } catch (error: any) {
+    await session.abortTransaction(); // Abort on any unexpected error
+    console.error('Error in bulkAddProducts:', error);
+    res.status(500).json({ message: 'Error processing file', error: error.message });
+  } finally {
+    session.endSession(); // Always end the session
   }
 };

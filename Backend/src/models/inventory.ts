@@ -31,8 +31,8 @@ const inventorySchema = new Schema<IInventory>({
   },
   price: { // This will now represent the default selling price if sellingPrice is not provided
     type: Number,
-    required: true,
-    min: 0
+    min: 0,
+    default: 0 // Default to 0, or consider making it required based on business logic  
   },
   buyingPrice: {
     type: Number,

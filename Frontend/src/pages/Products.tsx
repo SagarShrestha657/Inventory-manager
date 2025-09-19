@@ -32,6 +32,7 @@ import {
   Visibility as VisibilityIcon,
   AddShoppingCart as AddShoppingCartIcon,
   RemoveShoppingCart as RemoveShoppingCartIcon,
+  UploadFile as UploadFileIcon, // Import UploadFileIcon
 } from '@mui/icons-material';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { getInventory, deleteItem } from '../services/inventoryService';
@@ -39,6 +40,7 @@ import AddProductModal from '../components/inventory/AddProductModal';
 import EditProductModal from '../components/inventory/EditProductModal';
 import ViewProductModal from '../components/inventory/ViewProductModal';
 import AdjustStockModal from '../components/inventory/AdjustStockModal';
+import BulkAddProductsModal from '../components/inventory/BulkAddProductsModal'; // Import the new modal
 import type { IInventoryItem } from '../services/inventoryService';
 
 const statusMap = {
@@ -52,6 +54,7 @@ const Products: React.FC = () => {
   const [rowsPerPage, setRowsPerPage] = useState(5);
   const [searchTerm, setSearchTerm] = useState('');
   const [isAddModalOpen, setIsAddModalOpen] = useState(false);
+  const [isBulkAddModalOpen, setIsBulkAddModalOpen] = useState(false); // State for the new modal
   const [isEditModalOpen, setIsEditModalOpen] = useState(false);
   const [isViewModalOpen, setIsViewModalOpen] = useState(false);
   const [isAdjustStockModalOpen, setIsAdjustStockModalOpen] = useState(false);
@@ -135,9 +138,14 @@ const Products: React.FC = () => {
     <Box>
       <Box display="flex" justifyContent="space-between" alignItems="center" mb={3}>
         <Typography variant="h4">Products</Typography>
-        <Button variant="contained" color="primary" startIcon={<AddIcon />} onClick={() => setIsAddModalOpen(true)}>
-          Add Product
-        </Button>
+        <Box>
+          <Button variant="contained" color="primary" startIcon={<UploadFileIcon />} onClick={() => setIsBulkAddModalOpen(true)} sx={{ mr: 1 }}>
+            Bulk Add
+          </Button>
+          <Button variant="contained" color="primary" startIcon={<AddIcon />} onClick={() => setIsAddModalOpen(true)}>
+            Add Product
+          </Button>
+        </Box>
       </Box>
 
       <Card>
@@ -210,6 +218,7 @@ const Products: React.FC = () => {
 
       {/* Modals & Dialogs */}
       <AddProductModal open={isAddModalOpen} onClose={() => setIsAddModalOpen(false)} onSuccess={handleSuccess} onError={handleError} />
+      <BulkAddProductsModal open={isBulkAddModalOpen} onClose={() => setIsBulkAddModalOpen(false)} onSuccess={handleSuccess} onError={handleError} />
       <EditProductModal open={isEditModalOpen} onClose={() => setIsEditModalOpen(false)} product={selectedProduct} onSuccess={handleSuccess} onError={handleError} />
       <ViewProductModal open={isViewModalOpen} onClose={() => setIsViewModalOpen(false)} product={selectedProduct} />
       <AdjustStockModal open={isAdjustStockModalOpen} onClose={() => setIsAdjustStockModalOpen(false)} product={selectedProduct} type={adjustStockType} onSuccess={handleSuccess} onError={handleError} />

@@ -1,8 +1,13 @@
 import { Router } from 'express';
 import * as inventoryController from '../controllers/inventoryController';
 import auth from '../middleware/authMiddleware';
+import multer from 'multer';
 
 const router = Router();
+
+// Configure multer for file uploads
+const storage = multer.memoryStorage();
+const upload = multer({ storage: storage });
 
 // Protect all inventory routes with authentication middleware
 router.use(auth);
@@ -12,6 +17,9 @@ router.get('/', inventoryController.getInventory);
 
 // POST /api/inventory - Create a new inventory item
 router.post('/', inventoryController.createInventoryItem);
+
+// POST /api/inventory/bulk-upload - Bulk add products from an Excel file
+router.post('/bulk-upload', upload.single('file'), inventoryController.bulkAddProducts);
 
 // Update all InventoryHistory records for a productId (name/SKU change)
 router.put('/:id/update-history', inventoryController.updateProductHistory);

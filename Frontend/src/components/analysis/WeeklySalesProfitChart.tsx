@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer, Label } from 'recharts';
+import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer} from 'recharts';
 import { Box, Typography, IconButton, CircularProgress, Alert, Paper } from '@mui/material';
 import { AdapterDateFns } from '@mui/x-date-pickers/AdapterDateFns';
 import { LocalizationProvider, DatePicker } from '@mui/x-date-pickers';
@@ -26,14 +26,15 @@ const fetchWeeklyAnalytics = async (startDate: Date) => {
   return response.data;
 };
 
-const formatYAxis = (tickItem: number) => {
+const formatYAxis = (value: any): string => {
+  const tickItem = Number(value);
   if (tickItem >= 1000000) {
     return `${(tickItem / 1000000).toFixed(1)}M`;
   }
   if (tickItem >= 1000) {
     return `${(tickItem / 1000).toFixed(1)}k`;
   }
-  return tickItem;
+  return String(tickItem);
 };
 
 const CustomTooltip = ({ active, payload, label }: any) => {
@@ -82,7 +83,7 @@ const WeeklySalesProfitChart: React.FC = () => {
   };
 
   return (
-    <Box sx={{ width: '100%', p: 2 }}>
+    <Box sx={{ width: '100%', p: 2, '& .recharts-wrapper': { outline: 'none' } }}>
       <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 2 }}>
         <Box sx={{ display: 'flex', alignItems: 'center' }}>
           <IconButton onClick={handlePreviousWeek}>
