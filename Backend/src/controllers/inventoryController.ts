@@ -518,9 +518,10 @@ export const getWeeklyAnalytics = async (req: Request, res: Response): Promise<v
         }
       });
 
+      const weekdays = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'];
       weeklyData.push({
         date: day.toISOString().split('T')[0],
-        name: day.toLocaleDateString('en-US', { weekday: 'short' }),
+        name: weekdays[day.getDay()],
         sales: parseFloat(totalSellValue.toFixed(2)),
         profit: parseFloat(dailyProfit.toFixed(2)),
       });
@@ -628,7 +629,7 @@ export const getTopSellingProducts = async (req: Request, res: Response): Promis
 };
 
 
-// ... (other exports and functions)
+// ... (other exports and functions) 
 
 export const bulkAddProducts = async (req: Request, res: Response): Promise<void> => {
   const session = await mongoose.startSession(); // Start a session
