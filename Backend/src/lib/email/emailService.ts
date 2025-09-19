@@ -379,3 +379,83 @@ export const sendPasswordResetConfirmation = async (email: string) => {
   const html = replacePlaceholders(passwordResetConfirmationTemplate, { loginLink, year: new Date().getFullYear() });
   await sendEmail({ to: email, subject, text: 'Your password has been successfully reset.', html });
 };
+
+const lowStockNotificationTemplate = `<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Low Stock Alert</title>
+    <style>
+        body {
+            font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif;
+            line-height: 1.6;
+            color: #333333;
+            background-color: #f4f4f4;
+            margin: 0;
+            padding: 0;
+        }
+        .container {
+            width: 100%;
+            max-width: 600px;
+            margin: 0 auto;
+            background-color: #ffffff;
+            padding: 20px;
+            border-radius: 8px;
+            box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+        }
+        .header {
+            background-color: #ffcc00; /* Yellow */
+            color: #333333;
+            padding: 20px;
+            text-align: center;
+            border-radius: 8px 8px 0 0;
+        }
+        .content {
+            padding: 20px;
+            text-align: left;
+        }
+        .footer {
+            text-align: center;
+            margin-top: 30px;
+            font-size: 0.9em;
+            color: #777777;
+        }
+        .product-info {
+            font-size: 1.2em;
+            margin: 20px 0;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>Low Stock Alert</h1>
+        </div>
+        <div class="content">
+            <p>Hello,</p>
+            <p>This is an alert that the stock for one of your products is running low.</p>
+            <div class="product-info">
+                <p><strong>Product:</strong> {{productName}}</p>
+                <p><strong>SKU:</strong> {{sku}}</p>
+                <p><strong>Remaining Quantity:</strong> {{quantity}}</p>
+            </div>
+            <p>Please restock soon to avoid running out of inventory.</p>
+        </div>
+        <div class="footer">
+            <p>&copy; {{year}} Inventory Manager. All rights reserved.</p>
+        </div>
+    </div>
+</body>
+</html>`;
+
+export const sendLowStockNotification = async (email: string, productName: string, sku: string, quantity: number) => {
+  const subject = `Low Stock Alert for ${productName}`;
+  const html = replacePlaceholders(lowStockNotificationTemplate, {
+    productName,
+    sku,
+    quantity,
+    year: new Date().getFullYear(),
+  });
+  await sendEmail({ to: email, subject, text: `Your product ${productName} (SKU: ${sku}) is low on stock. Remaining quantity: ${quantity}`, html });
+};

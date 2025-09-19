@@ -6,6 +6,8 @@ import InventoryHistory, { IInventoryHistory } from '../models/InventoryHistory'
 import * as XLSX from 'xlsx'; // Import xlsx library
 import mongoose from 'mongoose';
 import Category from '../models/Category';
+import { sendLowStockNotification } from '../lib/email/emailService';
+import User from '../models/User';
 
 // Define a draft interface for history entries before productId is known
 interface IInventoryHistoryDraft {
@@ -222,10 +224,7 @@ export const updateItemQuantity = async (req: Request, res: Response): Promise<v
       historyType = 'reduce';
       priceForHistory = Number(price); // Selling price for this transaction
       buyingPriceForHistory = item.buyingPrice; // Capture current buying price for history
-      // Removed the line below to prevent updating the actual item.price
-      // if (price !== undefined) {
-      //   item.price = Number(price);
-      // }
+
     } else {
       res.status(400).json({ message: 'Invalid operation type. Must be \'add\' or \'reduce\'.' });
       return;
@@ -234,6 +233,12 @@ export const updateItemQuantity = async (req: Request, res: Response): Promise<v
     if (newQuantity < 0) {
       res.status(400).json({ message: 'Quantity cannot be negative' });
       return;
+    }
+    if (newQuantity <= 5) {
+      const user = await User.findById(userId);
+      if (user && user.email) {
+        sendLowStockNotification(user.email, item.name, item.sku, newQuantity);
+      }
     }
 
     item.quantity = newQuantity;
@@ -726,7 +731,7 @@ export const bulkAddProducts = async (req: Request, res: Response): Promise<void
         }
 
         const newProduct: IInventory = new Inventory({
-          name, 
+          name,
           sku,
           description: description || undefined,
           price,
