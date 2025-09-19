@@ -4,6 +4,7 @@ import { Box, Typography, IconButton, CircularProgress, Alert, Paper } from '@mu
 import { AdapterDateFns } from '@mui/x-date-pickers/AdapterDateFns';
 import { LocalizationProvider, DatePicker } from '@mui/x-date-pickers';
 import { addDays, subDays, startOfWeek, endOfWeek, format } from 'date-fns';
+import { formatInTimeZone } from 'date-fns-tz';
 import NavigateBeforeIcon from '@mui/icons-material/NavigateBefore';
 import NavigateNextIcon from '@mui/icons-material/NavigateNext';
 import { useQuery } from '@tanstack/react-query';
@@ -21,8 +22,11 @@ const getAuthHeaders = () => {
   };
 };
 
-const fetchWeeklyAnalytics = async (startDate: Date) => {
-  const response = await axios.get(`${API_URL}/analytics/weekly?startDate=${startDate.toISOString()}`, getAuthHeaders());
+const fetchWeeklyAnalytics = async (startDate: Date, userTimeZone: string) => {
+  const formattedDate = format(startDate, 'yyyy-MM-dd');
+  // Send userTimeZone as a query parameter
+  console.log('Fetching data for startDate:', formattedDate, 'in timezone:', userTimeZone);
+  const response = await axios.get(`${API_URL}/analytics/weekly?startDate=${formattedDate}&userTimeZone=${userTimeZone}`, getAuthHeaders());
   return response.data;
 };
 
@@ -57,13 +61,14 @@ const CustomTooltip = ({ active, payload, label }: any) => {
 
 const WeeklySalesProfitChart: React.FC = () => {
   const [currentDate, setCurrentDate] = useState(new Date());
+  const userTimeZone = Intl.DateTimeFormat().resolvedOptions().timeZone;
 
   const weekStart = startOfWeek(currentDate, { weekStartsOn: 0 });
   const weekEnd = endOfWeek(currentDate, { weekStartsOn: 0 });
 
   const { data, isLoading, error } = useQuery({
-    queryKey: ['weeklyAnalytics', weekStart.toISOString()],
-    queryFn: () => fetchWeeklyAnalytics(weekStart),
+    queryKey: ['weeklyAnalytics', weekStart.toISOString(), userTimeZone],
+    queryFn: () => fetchWeeklyAnalytics(weekStart, userTimeZone),
   });
 
   const handleDateChange = (newDate: Date | null) => {
@@ -90,7 +95,7 @@ const WeeklySalesProfitChart: React.FC = () => {
             <NavigateBeforeIcon />
           </IconButton>
           <Typography variant="h6" sx={{ mx: 2 }}>
-            {format(weekStart, 'MMM d')} - {format(weekEnd, 'MMM d, yyyy')}
+            {formatInTimeZone(weekStart, userTimeZone, 'MMM d')} - {formatInTimeZone(weekEnd, userTimeZone, 'MMM d, yyyy')}
           </Typography>
           <IconButton onClick={handleNextWeek}>
             <NavigateNextIcon />

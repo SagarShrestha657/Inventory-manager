@@ -8,6 +8,7 @@ import mongoose from 'mongoose';
 import Category from '../models/Category';
 import { sendLowStockNotification } from '../lib/email/emailService';
 import User from '../models/User';
+import { format, addDays, parseISO } from 'date-fns';
 
 // Define a draft interface for history entries before productId is known
 interface IInventoryHistoryDraft {
@@ -478,6 +479,7 @@ export const getMonthlyAnalytics = async (req: Request, res: Response): Promise<
   }
 };
 
+
 export const getWeeklyAnalytics = async (req: Request, res: Response): Promise<void> => {
   try {
     const userId = req.user?.id;
@@ -486,19 +488,24 @@ export const getWeeklyAnalytics = async (req: Request, res: Response): Promise<v
       return;
     }
 
-    const { startDate: startDateString } = req.query;
-    const startDate = startDateString ? new Date(startDateString as string) : new Date();
-    startDate.setHours(0, 0, 0, 0);
+    const { startDate: startDateString, userTimeZone: userTimeZoneString} = req.query;
 
+    if (!startDateString) {
+      res.status(400).json({ message: 'Missing required query parameter: startdate' });
+      return;
+    }
+
+    const startDate = parseISO(startDateString as string); // e.g., 2025-08-24 (Sunday)
+    const weekdays = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'];
     const weeklyData = [];
 
     for (let i = 0; i < 7; i++) {
-      const day = new Date(startDate);
-      day.setDate(day.getDate() + i);
+      const currentDay = addDays(startDate, i);
 
-      const startOfDay = new Date(day);
+      const startOfDay = new Date(currentDay);
       startOfDay.setHours(0, 0, 0, 0);
-      const endOfDay = new Date(day);
+
+      const endOfDay = new Date(currentDay);
       endOfDay.setHours(23, 59, 59, 999);
 
       const dailyHistory = await InventoryHistory.find({
@@ -518,10 +525,9 @@ export const getWeeklyAnalytics = async (req: Request, res: Response): Promise<v
         }
       });
 
-      const weekdays = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'];
       weeklyData.push({
-        date: day.toISOString().split('T')[0],
-        name: weekdays[day.getDay()],
+        name: weekdays[currentDay.getDay()],
+        date: format(currentDay, 'yyyy-MM-dd'),
         sales: parseFloat(totalSellValue.toFixed(2)),
         profit: parseFloat(dailyProfit.toFixed(2)),
       });
@@ -530,10 +536,9 @@ export const getWeeklyAnalytics = async (req: Request, res: Response): Promise<v
     res.status(200).json(weeklyData);
   } catch (error) {
     console.error('Error fetching weekly analytics:', error);
-    res.status(500).json({ message: 'Error fetching weekly analytics', error });
+    res.status(500).json({ message: 'Error fetching weekly analytics' });
   }
 };
-
 
 export const getTopSellingProducts = async (req: Request, res: Response): Promise<void> => {
   try {
