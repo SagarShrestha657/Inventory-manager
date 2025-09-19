@@ -490,15 +490,10 @@ export const getWeeklyAnalytics = async (req: Request, res: Response): Promise<v
     const startDate = startDateString ? new Date(startDateString as string) : new Date();
     startDate.setHours(0, 0, 0, 0);
 
-    // Adjust startDate to the beginning of the week (Sunday)
-    const dayOfWeek = startDate.getDay(); // Sunday is 0, Monday is 1, etc.
-    const diff = startDate.getDate() - dayOfWeek;
-    const weekStartDate = new Date(startDate.setDate(diff));
-
     const weeklyData = [];
 
     for (let i = 0; i < 7; i++) {
-      const day = new Date(weekStartDate);
+      const day = new Date(startDate);
       day.setDate(day.getDate() + i);
 
       const startOfDay = new Date(day);
@@ -551,43 +546,49 @@ export const getTopSellingProducts = async (req: Request, res: Response): Promis
 
     const matchConditions: any = { userId: new Types.ObjectId(userId), type: 'reduce' };
 
+    const now = new Date();
     let dateFilter: any;
 
-    if (period === 'custom' && startDate && endDate) {
-      const parsedStartDate = new Date(startDate as string);
-      const parsedEndDate = new Date(endDate as string);
-      if (isNaN(parsedStartDate.getTime()) || isNaN(parsedEndDate.getTime())) {
-        res.status(400).json({ message: 'Invalid custom date range provided.' });
-        return;
-      }
-      dateFilter = { $gte: parsedStartDate, $lte: parsedEndDate };
-    } else {
-      const now = new Date();
-      switch (period) {
-        case 'day':
-          dateFilter = { $gte: new Date(now.setHours(0, 0, 0, 0)), $lte: new Date(now.setHours(23, 59, 59, 999)) };
-          break;
-        case 'week':
-          const startOfWeek = new Date(now);
-          startOfWeek.setDate(now.getDate() - now.getDay()); // Set to Sunday
-          startOfWeek.setHours(0, 0, 0, 0);
-          const endOfWeek = new Date(startOfWeek);
-          endOfWeek.setDate(startOfWeek.getDate() + 6);
-          endOfWeek.setHours(23, 59, 59, 999);
-          dateFilter = { $gte: startOfWeek, $lte: endOfWeek };
-          break;
-        case 'month':
-          const startOfMonth = new Date(now.getFullYear(), now.getMonth(), 1);
-          startOfMonth.setHours(0, 0, 0, 0);
-          const endOfMonth = new Date(now.getFullYear(), now.getMonth() + 1, 0);
-          endOfMonth.setHours(23, 59, 59, 999);
-          dateFilter = { $gte: startOfMonth, $lte: endOfMonth };
-          break;
-        case 'all':
-        default:
-          break;
-      }
+
+    switch (period) {
+      case 'day':
+        dateFilter = { $gte: new Date(now.setHours(0, 0, 0, 0)), $lte: new Date(now.setHours(23, 59, 59, 999)) };
+        break;
+      case '10days':
+        // Adjust for 'Last 10 Days' including today
+        now.setDate(now.getDate() - 9);
+        dateFilter = { $gte: new Date(now.setHours(0, 0, 0, 0)), $lte: new Date() };
+        break;
+      case 'month':
+        // Set to the first day of the current month
+        now.setDate(1);
+        dateFilter = { $gte: new Date(now.setHours(0, 0, 0, 0)), $lte: new Date() };
+        break;
+      case '3months':
+        const threeMonthsAgo = new Date();
+        threeMonthsAgo.setMonth(threeMonthsAgo.getMonth() - 2); // Go back 2 months to include current month
+        threeMonthsAgo.setDate(1); // Set to the first day of that month
+        dateFilter = { $gte: new Date(threeMonthsAgo.setHours(0, 0, 0, 0)), $lte: new Date() };
+        break;
+      case 'custom':
+        if (startDate && endDate) {
+          const parsedStartDate = new Date(startDate as string);
+          const parsedEndDate = new Date(endDate as string);
+          if (isNaN(parsedStartDate.getTime()) || isNaN(parsedEndDate.getTime())) {
+            res.status(400).json({ message: 'Invalid custom date range provided.' });
+            return;
+          }
+          dateFilter = { $gte: parsedStartDate, $lte: parsedEndDate };
+        } else {
+          res.status(400).json({ message: 'Custom date range requires both startDate and endDate.' });
+          return;
+        }
+        break;
+      case 'all':
+      default: // All time
+        break;
     }
+
 
     if (dateFilter) {
       matchConditions.timestamp = dateFilter;
