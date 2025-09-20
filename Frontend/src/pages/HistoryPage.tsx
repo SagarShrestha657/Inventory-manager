@@ -41,6 +41,7 @@ interface IInventoryHistoryItem {
 }
 
 const API_URL = `${API_BASE_URL}/inventory`;
+const currency = localStorage.getItem('currency') || 'INR';
 
 
 
@@ -269,8 +270,8 @@ const HistoryPage: React.FC = () => {
                     </TableCell>
                     <TableCell align="center">{record.changeQuantity > 0 ? `+${record.changeQuantity}` : record.changeQuantity}</TableCell>
                     <TableCell align="center">{record.currentQuantity}</TableCell>
-                    <TableCell align="center">INR {record.buyingPriceAtTransaction?.toFixed(2) || 'N/A'}</TableCell>
-                    <TableCell align="center">INR {record.priceAtTransaction?.toFixed(2) || 'N/A'}</TableCell>
+                    <TableCell align="center">{ currency } {record.buyingPriceAtTransaction?.toFixed(2) || 'N/A'}</TableCell>
+                    <TableCell align="center">{ currency } {record.priceAtTransaction?.toFixed(2) || 'N/A'}</TableCell>
                   </TableRow>
                 );
               })}

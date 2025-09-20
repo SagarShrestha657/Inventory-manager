@@ -12,29 +12,22 @@ import {
 } from '@mui/material';
 
 import { Sidebar } from './Sidebar'; // Import Sidebar component
+import Tour from '../tour/Tour';
 
 const drawerWidth = 240;
 
 // SVG Logo Component
 const Logo = () => (
   <Box sx={{ display: 'flex', alignItems: 'center', mr: 2 }}>
-    <svg
-      width="30"
-      height="30"
-      viewBox="0 0 24 24"
-      fill="none"
-      stroke="currentColor"
-      strokeWidth="2"
-      strokeLinecap="round"
-      strokeLinejoin="round"
-    >
-      <path d="M21 8V5c0-1.1-.9-2-2-2H5c-1.1 0-2 .9-2 2v3" />
-      <path d="M21 8h-6l-2 3H5a2 2 0 0 0-2 2v7c0 1.1.9 2 2 2h14c1.1 0 2-.9 2-2v-7a2 2 0 0 0-2-2z" />
-      <path d="M8 12h8" />
-      <path d="M12 8v4" />
-    </svg>
+    
     <Typography variant="h6" component="div" sx={{ ml: 1, fontWeight: 700, color: 'inherit' }}>
-      InventoryFlow
+      <svg xmlns="http://www.w3.org/2000/svg" width="180" height="50" viewBox="0 0 300 80" fill="none">
+        <rect x="10" y="17" width="60" height="60" rx="8" fill="#4F46E5" />
+        <path d="M25 32 L55 62 M55 32 L25 62" stroke="white" stroke-width="6" stroke-linecap="round" />
+        <text x="80" y="60" font-family="Inter, sans-serif" font-weight="700" font-size="38" fill="#111827">
+          Vendora<tspan fill="#4F46E5">X</tspan>
+        </text>
+      </svg>
     </Typography>
   </Box>
 );
@@ -68,6 +61,7 @@ export const Layout: React.FC<LayoutProps> = ({ children }) => {
       <CssBaseline />
       <AppBar
         position="fixed"
+        id="app-bar"
         sx={{
           width: { xl2: `calc(100% - ${drawerWidth}px)` },
           ml: { xl2: `${drawerWidth}px` },
@@ -76,7 +70,7 @@ export const Layout: React.FC<LayoutProps> = ({ children }) => {
           boxShadow: 'none', // Remove shadow for minimalist look
           borderBottom: `1px solid ${theme.palette.divider}`, // Subtle border at the bottom
         }}
-        
+
       >
         <Toolbar>
           <IconButton
@@ -116,6 +110,7 @@ export const Layout: React.FC<LayoutProps> = ({ children }) => {
         </Drawer>
         <Drawer
           variant="permanent"
+          id="sidebar"
           sx={{
             display: { xs: 'none', xl2: 'block' },
             '& .MuiDrawer-paper': {
@@ -130,6 +125,7 @@ export const Layout: React.FC<LayoutProps> = ({ children }) => {
       </Box>
       <Box
         component="main"
+        id="main-content"
         sx={{
           flexGrow: 1,
           p: 3,
@@ -139,6 +135,7 @@ export const Layout: React.FC<LayoutProps> = ({ children }) => {
       >
         {children}
       </Box>
+      <Tour />
     </Box>
   );
 };

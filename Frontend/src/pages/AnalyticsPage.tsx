@@ -58,6 +58,8 @@ import {
   EmojiEvents as EmojiEventsIcon,
 } from '@mui/icons-material';
 
+const currency = localStorage.getItem('currency') || 'INR';
+
 // Analytics type options for the last table
 const ANALYTICS_TYPES = [
   { value: 'stock_added', label: 'Stock Added' },
@@ -472,13 +474,13 @@ const AnalyticsPage: React.FC = () => {
                 <Grid item xs={6}>
                   <Typography variant="button" display="block" gutterBottom>Total Sales</Typography>
                   <Typography variant="h5" color={totalSalesForGoal >= goal.targetAmount ? 'success.main' : 'error.main'}>
-                    INR {totalSalesForGoal.toLocaleString()} / {goal.targetAmount.toLocaleString()}
+                    { currency } {totalSalesForGoal.toLocaleString()} / {goal.targetAmount.toLocaleString()}
                   </Typography>
                 </Grid>
                 <Grid item xs={6}>
                   <Typography variant="button" display="block" gutterBottom>Total Profit</Typography>
                   <Typography variant="h5" color={totalProfitForGoal >= goal.targetProfit ? 'success.main' : 'error.main'}>
-                    INR {totalProfitForGoal.toLocaleString()} / {goal.targetProfit.toLocaleString()}
+                    { currency } {totalProfitForGoal.toLocaleString()} / {goal.targetProfit.toLocaleString()}
                   </Typography>
                 </Grid>
               </Grid>
@@ -528,7 +530,7 @@ const AnalyticsPage: React.FC = () => {
                               </Typography>
                             </CircularProgressWithLabel>
                             <Typography variant="body2" sx={{ mt: 1 }}>
-                              Target: INR {dailySalesTarget.toFixed(0)}
+                              Target: { currency } {dailySalesTarget.toFixed(0)}
                             </Typography>
                           </Box>
                         </Grid>
@@ -546,7 +548,7 @@ const AnalyticsPage: React.FC = () => {
                               </Typography>
                             </CircularProgressWithLabel>
                             <Typography variant="body2" sx={{ mt: 1 }}>
-                              Target: INR {dailyProfitTarget.toFixed(0)}
+                              Target: { currency } {dailyProfitTarget.toFixed(0)}
                             </Typography>
                           </Box>
                         </Grid>
@@ -574,7 +576,7 @@ const AnalyticsPage: React.FC = () => {
                               </Typography>
                             </CircularProgressWithLabel>
                             <Typography variant="body2" sx={{ mt: 1 }}>
-                              Sales: INR {goal?.targetAmount?.toLocaleString()}
+                              Sales: { currency } {goal?.targetAmount?.toLocaleString()}
                             </Typography>
                           </Box>
                         </Grid>
@@ -592,7 +594,7 @@ const AnalyticsPage: React.FC = () => {
                               </Typography>
                             </CircularProgressWithLabel>
                             <Typography variant="body2" sx={{ mt: 1 }}>
-                              Profit: INR {goal?.targetProfit?.toLocaleString()}
+                              Profit: { currency } {goal?.targetProfit?.toLocaleString()}
                             </Typography>
                           </Box>
                         </Grid>
@@ -649,7 +651,7 @@ const AnalyticsPage: React.FC = () => {
                       <ShoppingCartIcon fontSize="medium" />
                     </Avatar>
                     <Typography variant="caption" color="textSecondary">Buy Value</Typography>
-                    <Typography variant="subtitle1" fontWeight={700} color="info.main">INR {dailyAnalytics.totalBuyValue.toFixed(2)}</Typography>
+                    <Typography variant="subtitle1" fontWeight={700} color="info.main">{ currency } {dailyAnalytics.totalBuyValue.toFixed(2)}</Typography>
                   </Box>
                 </Grid>
                 <Grid item xs={12} sm={4}>
@@ -658,7 +660,7 @@ const AnalyticsPage: React.FC = () => {
                       <MonetizationOnIcon fontSize="medium" />
                     </Avatar>
                     <Typography variant="caption" color="textSecondary">Sell Value</Typography>
-                    <Typography variant="subtitle1" fontWeight={700} color="primary.main">INR {dailyAnalytics.totalSellValue.toFixed(2)}</Typography>
+                    <Typography variant="subtitle1" fontWeight={700} color="primary.main">{ currency } {dailyAnalytics.totalSellValue.toFixed(2)}</Typography>
                   </Box>
                 </Grid>
                 <Grid item xs={12} sm={4}>
@@ -668,7 +670,7 @@ const AnalyticsPage: React.FC = () => {
                     </Avatar>
                     <Typography variant="caption" color="textSecondary">Profit</Typography>
                     <Typography variant="subtitle1" fontWeight={700} color={dailyAnalytics.dailyProfit >= 0 ? 'success.main' : 'error.main'}>
-                      INR {dailyAnalytics.dailyProfit.toFixed(2)}
+                      { currency } {dailyAnalytics.dailyProfit.toFixed(2)}
                     </Typography>
                   </Box>
                 </Grid>
@@ -705,7 +707,7 @@ const AnalyticsPage: React.FC = () => {
                       <ShoppingCartIcon fontSize="medium" />
                     </Avatar>
                     <Typography variant="caption" color="textSecondary">Buy Value</Typography>
-                    <Typography variant="subtitle1" fontWeight={700} color="info.main">INR {monthlyAnalytics.totalBuyValue.toFixed(2)}</Typography>
+                    <Typography variant="subtitle1" fontWeight={700} color="info.main">{ currency } {monthlyAnalytics.totalBuyValue.toFixed(2)}</Typography>
                   </Box>
                 </Grid>
                 <Grid item xs={12} sm={4}>
@@ -714,7 +716,7 @@ const AnalyticsPage: React.FC = () => {
                       <MonetizationOnIcon fontSize="medium" />
                     </Avatar>
                     <Typography variant="caption" color="textSecondary">Sell Value</Typography>
-                    <Typography variant="subtitle1" fontWeight={700} color="primary.main">INR {monthlyAnalytics.totalSellValue.toFixed(2)}</Typography>
+                    <Typography variant="subtitle1" fontWeight={700} color="primary.main">{ currency } {monthlyAnalytics.totalSellValue.toFixed(2)}</Typography>
                   </Box>
                 </Grid>
                 <Grid item xs={12} sm={4}>
@@ -724,7 +726,7 @@ const AnalyticsPage: React.FC = () => {
                     </Avatar>
                     <Typography variant="caption" color="textSecondary">Profit</Typography>
                     <Typography variant="subtitle1" fontWeight={700} color={monthlyAnalytics.monthlyProfit >= 0 ? 'success.main' : 'error.main'}>
-                      INR {monthlyAnalytics.monthlyProfit.toFixed(2)}
+                      { currency } {monthlyAnalytics.monthlyProfit.toFixed(2)}
                     </Typography>
                   </Box>
                 </Grid>
@@ -849,9 +851,9 @@ const AnalyticsPage: React.FC = () => {
                         const margin = item.sellValue > 0 ? (item.profit / item.sellValue) * 100 : 0;
                         return {
                           ...item,
-                          sellValue: `INR ${item.sellValue.toFixed(2)}`,
-                          buyValue: `INR ${item.buyValue.toFixed(2)}`,
-                          profit: `INR ${item.profit.toFixed(2)}`,
+                          sellValue: `${ currency } ${item.sellValue.toFixed(2)}`,
+                          buyValue: `${ currency } ${item.buyValue.toFixed(2)}`,
+                          profit: `${ currency } ${item.profit.toFixed(2)}`,
                           margin: `${margin.toFixed(2)}%`,
                         };
                       });
@@ -866,7 +868,7 @@ const AnalyticsPage: React.FC = () => {
                     rows = historyData.filter(r => r.type === 'add').map(r => ({
                       productName: r.productName,
                       quantity: r.changeQuantity,
-                      buyValue: `INR ${((r.buyingPriceAtTransaction || 0) * r.changeQuantity).toFixed(2)}`,
+                      buyValue: `${ currency } ${((r.buyingPriceAtTransaction || 0) * r.changeQuantity).toFixed(2)}`,
                       date: new Date(r.timestamp)?.toLocaleString(),
                     }));
                     const totalQuantityAdded = historyData.filter(r => r.type === 'add').reduce((acc, r) => acc + r.changeQuantity, 0);
@@ -875,7 +877,7 @@ const AnalyticsPage: React.FC = () => {
                       <TableRow>
                         <TableCell colSpan={1} />
                         <TableCell align="center">Total Quantity: {totalQuantityAdded}</TableCell>
-                        <TableCell align="center">Total Buy Value: INR {totalBuyValueAdded.toFixed(2)}</TableCell>
+                        <TableCell align="center">Total Buy Value: { currency } {totalBuyValueAdded.toFixed(2)}</TableCell>
                         <TableCell colSpan={1} />
                       </TableRow>
                     );
@@ -891,8 +893,8 @@ const AnalyticsPage: React.FC = () => {
                     rows = historyData.filter(r => r.type === 'edit_item').map(r => ({
                       productName: r.productName,
                       stock: r.currentQuantity,
-                      buyValue: r.buyingPriceAtTransaction ? `INR ${r.buyingPriceAtTransaction.toFixed(2)}` : 'N/A',
-                      sellValue: r.priceAtTransaction ? `INR ${r.priceAtTransaction.toFixed(2)}` : 'N/A',
+                      buyValue: r.buyingPriceAtTransaction ? `${ currency } ${r.buyingPriceAtTransaction.toFixed(2)}` : 'N/A',
+                      sellValue: r.priceAtTransaction ? `${ currency } ${r.priceAtTransaction.toFixed(2)}` : 'N/A',
                       date: new Date(r.timestamp)?.toLocaleString(),
                     }));
                     break;
@@ -913,9 +915,9 @@ const AnalyticsPage: React.FC = () => {
                       return {
                         productName: r.productName,
                         quantity: quantity,
-                        sellValue: `INR ${sellValue.toFixed(2)}`,
-                        buyValue: `INR ${buyValue.toFixed(2)}`,
-                        profit: `INR ${profit.toFixed(2)}`,
+                        sellValue: `${ currency } ${sellValue.toFixed(2)}`,
+                        buyValue: `${ currency } ${buyValue.toFixed(2)}`,
+                        profit: `${ currency } ${profit.toFixed(2)}`,
                         date: new Date(r.timestamp)?.toLocaleString(),
                       };
                     });
@@ -927,9 +929,9 @@ const AnalyticsPage: React.FC = () => {
                       <TableRow>
                         <TableCell />
                         <TableCell align="center">Total: {totalQuantitySold}</TableCell>
-                        <TableCell align="center">INR {totalSellValue.toFixed(2)}</TableCell>
-                        <TableCell align="center">INR {totalBuyValueSold.toFixed(2)}</TableCell>
-                        <TableCell align="center">INR {totalProfit.toFixed(2)}</TableCell>
+                        <TableCell align="center">{ currency } {totalSellValue.toFixed(2)}</TableCell>
+                        <TableCell align="center">{ currency } {totalBuyValueSold.toFixed(2)}</TableCell>
+                        <TableCell align="center">{ currency } {totalProfit.toFixed(2)}</TableCell>
                         <TableCell />
                       </TableRow>
                     );
@@ -944,7 +946,7 @@ const AnalyticsPage: React.FC = () => {
                     rows = historyData.filter(r => r.type === 'new_item').map(r => ({
                       productName: r.productName,
                       stock: r.changeQuantity,
-                      buyValue: `INR ${((r.buyingPriceAtTransaction || 0) * r.changeQuantity).toFixed(2)}`,
+                      buyValue: `${ currency } ${((r.buyingPriceAtTransaction || 0) * r.changeQuantity).toFixed(2)}`,
                       date: new Date(r.timestamp)?.toLocaleString(),
                     }));
                     const totalInitialStock = historyData.filter(r => r.type === 'new_item').reduce((acc, r) => acc + r.changeQuantity, 0);
@@ -953,7 +955,7 @@ const AnalyticsPage: React.FC = () => {
                       <TableRow>
                         <TableCell colSpan={1} />
                         <TableCell align="center">Total Stock: {totalInitialStock}</TableCell>
-                        <TableCell align="center">Total Buy Value: INR {totalInitialBuyValue.toFixed(2)}</TableCell>
+                        <TableCell align="center">Total Buy Value: { currency } {totalInitialBuyValue.toFixed(2)}</TableCell>
                         <TableCell colSpan={1} />
                       </TableRow>
                     );
@@ -968,7 +970,7 @@ const AnalyticsPage: React.FC = () => {
                     rows = historyData.filter(r => r.type === 'delete_item').map(r => ({
                       productName: r.productName,
                       stock: Math.abs(r.changeQuantity),
-                      buyValue: `INR ${((r.buyingPriceAtTransaction || 0) * Math.abs(r.changeQuantity)).toFixed(2)}`,
+                      buyValue: `${ currency } ${((r.buyingPriceAtTransaction || 0) * Math.abs(r.changeQuantity)).toFixed(2)}`,
                       date: new Date(r.timestamp)?.toLocaleString(),
                     }));
                     const totalDeletedStock = historyData.filter(r => r.type === 'delete_item').reduce((acc, r) => acc + Math.abs(r.changeQuantity), 0);
@@ -977,7 +979,7 @@ const AnalyticsPage: React.FC = () => {
                       <TableRow>
                         <TableCell colSpan={1} />
                         <TableCell align="center">Total Stock: {totalDeletedStock}</TableCell>
-                        <TableCell align="center">Total Buy Value: INR {totalDeletedBuyValue.toFixed(2)}</TableCell>
+                        <TableCell align="center">Total Buy Value: { currency } {totalDeletedBuyValue.toFixed(2)}</TableCell>
                         <TableCell colSpan={1} />
                       </TableRow>
                     );

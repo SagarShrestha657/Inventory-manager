@@ -48,6 +48,7 @@ const statusMap = {
   low_stock: { label: 'Low Stock', color: 'warning' as const },
   out_of_stock: { label: 'Out of Stock', color: 'error' as const },
 };
+const currency = localStorage.getItem('currency') || 'INR';
 
 const Products: React.FC = () => {
   const [page, setPage] = useState(0);
@@ -189,7 +190,7 @@ const Products: React.FC = () => {
                         <TableCell align="center"><Typography variant="body1" fontWeight="medium">{product.name}</Typography></TableCell>
                         <TableCell align="center">{product.sku}</TableCell>
                         <TableCell align="center">{product.category}</TableCell>
-                        <TableCell align="center">INR {product.price ? product.price.toFixed(2) : 'N/A'}</TableCell>
+                        <TableCell align="center">{ currency } {product.price ? product.price.toFixed(2) : 'N/A'}</TableCell>
                         <TableCell align="center">{product.quantity}</TableCell>
                         <TableCell align="center">
                           <Chip label={statusMap[stockStatus].label} color={statusMap[stockStatus].color} size="small" variant="outlined" />

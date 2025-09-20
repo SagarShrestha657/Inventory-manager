@@ -1,5 +1,6 @@
 import React from 'react';
 import { Link, useLocation } from 'react-router-dom';
+import useTourStore from '../../store/tourStore';
 import {
   Dashboard as DashboardIcon,
   Inventory as InventoryIcon,
@@ -8,6 +9,7 @@ import {
   History as HistoryIcon, // Import HistoryIcon
   Analytics as AnalyticsIcon, // Import AnalyticsIcon
   ViewList as ViewListIcon, // Import ViewListIcon
+  HelpOutline as HelpOutlineIcon,
 } from '@mui/icons-material';
 import {
   Drawer,
@@ -41,6 +43,7 @@ interface SidebarProps {
 export const Sidebar: React.FC<SidebarProps> = ({ open, onClose }) => {
   const theme = useTheme();
   const location = useLocation();
+  const startTour = useTourStore((state) => state.startTour);
 
   return (
     <Drawer
@@ -99,6 +102,18 @@ export const Sidebar: React.FC<SidebarProps> = ({ open, onClose }) => {
             </ListItemButton>
           </ListItem>
         ))}
+        <ListItem key="tour" disablePadding>
+          <ListItemButton
+            onClick={() => {
+              console.log('Take a Tour button clicked!');
+              startTour();
+              onClose();
+            }}
+          >
+            <ListItemIcon><HelpOutlineIcon /></ListItemIcon>
+            <ListItemText primary="Take a Tour" />
+          </ListItemButton>
+        </ListItem>
       </List>
     </Drawer>
   );

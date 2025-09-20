@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer} from 'recharts';
+import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer } from 'recharts';
 import { Box, Typography, IconButton, CircularProgress, Alert, Paper } from '@mui/material';
 import { AdapterDateFns } from '@mui/x-date-pickers/AdapterDateFns';
 import { LocalizationProvider, DatePicker } from '@mui/x-date-pickers';
@@ -12,6 +12,7 @@ import axios from 'axios';
 import API_BASE_URL from '../../config';
 
 const API_URL = `${API_BASE_URL}/inventory`;
+const currency = localStorage.getItem('currency') || 'INR';
 
 const getAuthHeaders = () => {
   const token = localStorage.getItem('token');
@@ -47,10 +48,10 @@ const CustomTooltip = ({ active, payload, label }: any) => {
       <Paper elevation={3} sx={{ p: 2, backgroundColor: 'rgba(255, 255, 255, 0.9)' }}>
         <Typography variant="h6" gutterBottom>{label}</Typography>
         <Typography variant="body2" sx={{ color: payload[0].color }}>
-          {`Sales: INR ${payload[0].value.toLocaleString()}`}
+          {`Sales: ${currency} ${payload[0].value.toLocaleString()}`}
         </Typography>
         <Typography variant="body2" sx={{ color: payload[1].color }}>
-          {`Profit: INR ${payload[1].value.toLocaleString()}`}
+          {`Profit: ${currency} ${payload[1].value.toLocaleString()}`}
         </Typography>
       </Paper>
     );
@@ -130,19 +131,19 @@ const WeeklySalesProfitChart: React.FC = () => {
           >
             <defs>
               <linearGradient id="colorSales" x1="0" y1="0" x2="0" y2="1">
-                <stop offset="5%" stopColor="#8884d8" stopOpacity={0.8}/>
-                <stop offset="95%" stopColor="#8884d8" stopOpacity={0}/>
+                <stop offset="5%" stopColor="#8884d8" stopOpacity={0.8} />
+                <stop offset="95%" stopColor="#8884d8" stopOpacity={0} />
               </linearGradient>
               <linearGradient id="colorProfit" x1="0" y1="0" x2="0" y2="1">
-                <stop offset="5%" stopColor="#82ca9d" stopOpacity={0.8}/>
-                <stop offset="95%" stopColor="#82ca9d" stopOpacity={0}/>
+                <stop offset="5%" stopColor="#82ca9d" stopOpacity={0.8} />
+                <stop offset="95%" stopColor="#82ca9d" stopOpacity={0} />
               </linearGradient>
             </defs>
             <CartesianGrid strokeDasharray="3 3" />
             <XAxis dataKey="name" />
-            <YAxis 
-              tickFormatter={formatYAxis} 
-              label={{ value: 'Amount (INR)', angle: -90, position: 'insideLeft', offset: -20, style: { textAnchor: 'middle' } }}
+            <YAxis
+              tickFormatter={formatYAxis}
+              label={{ value: `Amount (${currency})`, angle: -90, position: 'insideLeft', offset: -20, style: { textAnchor: 'middle' } }}
             />
             <Tooltip content={<CustomTooltip />} />
             <Legend />

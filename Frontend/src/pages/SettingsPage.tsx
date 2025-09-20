@@ -21,6 +21,7 @@ import { ChangePasswordOtpDialog } from '../components/settings/ChangePasswordOt
 import { ChangeUsernameDialog } from '../components/settings/ChangeUsernameDialog';
 import { DeleteAccountDialog } from '../components/settings/DeleteAccountDialog';
 import { LogoutConfirmDialog } from '../components/settings/LogoutConfirmDialog';
+import CurrencySelection from '../components/settings/CurrencySelection';
 
 const SettingsPage: React.FC = () => {
   const theme = useTheme();
@@ -119,6 +120,11 @@ const SettingsPage: React.FC = () => {
           </Button>
         </Box>
       </Paper>
+
+      <Paper elevation={1} sx={{ p: 3, borderRadius: 3, width: '100%', maxWidth: 420, mb: 3 }}>
+        <CurrencySelection />
+      </Paper>
+
       <Paper elevation={0} sx={{ p: 2, borderRadius: 3, width: '100%', maxWidth: 420, textAlign: 'center', bgcolor: theme.palette.grey[50] }}>
         <Typography variant="subtitle1" gutterBottom fontWeight={600}>App Info</Typography>
         <Typography variant="body2" color="textSecondary" mb={0.5}>
